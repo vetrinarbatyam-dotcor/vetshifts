@@ -108,6 +108,46 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 .legend{display:flex;gap:.8rem;flex-wrap:wrap;color:var(--muted);font-size:.8rem;margin-top:.5rem}
 .legend i{font-style:normal;border-radius:3px;padding:0 .35rem;border:1px solid var(--rule)}
 
+/* ── לוח שבועי ── */
+.board{display:grid;gap:.4rem;grid-auto-flow:column;align-items:stretch;margin-bottom:1rem}
+.board .lbl{color:var(--muted);font-size:.82rem;display:flex;align-items:center;
+  padding-inline-end:.4rem;white-space:nowrap}
+.board .bhead{background:var(--teal-soft);color:var(--teal);border:1px solid #BFE0DA;
+  border-radius:var(--r);padding:.3rem .55rem;font-weight:700;font-size:.85rem;
+  display:flex;gap:.4rem;align-items:baseline}
+.board .bhead .dt{color:#3E837A;font-weight:500;font-size:.78rem}
+.board .bhead .grow{flex:1}
+.board .bcell{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+  padding:.35rem;display:flex;flex-direction:column;gap:.25rem;min-height:4.2rem}
+.board .bcell.closed{background:transparent;border-style:dashed;justify-content:center;
+  align-items:center;color:var(--muted);font-size:.8rem;min-height:2.4rem}
+.board .cellpart{display:none;color:var(--muted);font-size:.78rem;font-weight:700}
+.emp{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;border:1px solid var(--rule);
+  border-radius:var(--r);padding:.22rem .4rem;font-size:.85rem;background:var(--card)}
+.emp .dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--dot,var(--muted));flex:0 0 auto}
+.emp .nm{flex:1 1 6rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  background:none;border:0;padding:0;text-align:start;cursor:pointer;font:inherit}
+.emp .nm:hover{text-decoration:underline}
+.emp .x{background:none;border:0;color:var(--muted);cursor:pointer;padding:0 .15rem;line-height:1}
+.emp .x:hover{color:var(--bad)}
+.emp.warn{border-color:#E6D3A0;background:var(--warn-bg)}
+.bdg{font-size:.68rem;color:var(--muted);border:1px solid var(--rule);border-radius:3px;
+  padding:0 .25rem;flex:0 0 auto}
+.bdg.w{color:var(--warn);border-color:#E6D3A0}
+.addbtn{background:none;border:1px dashed var(--rule);border-radius:var(--r);color:var(--muted);
+  cursor:pointer;font-size:.8rem;padding:.2rem;margin-top:auto}
+.addbtn:hover{border-color:var(--teal);color:var(--teal)}
+.board.locked .x,.board.locked .addbtn{display:none}
+.wklabel{font-family:var(--serif);font-weight:700}
+.pickrow{display:flex;align-items:center;gap:.5rem;width:100%;border:1px solid var(--rule);
+  border-radius:var(--r);padding:.4rem .55rem;background:var(--card);cursor:pointer;
+  margin-bottom:.3rem;text-align:start;font:inherit}
+.pickrow:hover{border-color:var(--teal)}
+.pickrow .why{color:var(--warn);font-size:.78rem}
+.pickrow[data-blocked="1"]{background:var(--warn-bg);border-color:#E6D3A0}
+.pickrow .grow{flex:1;min-width:0}
+.pickrow .pd{width:.5rem;height:.5rem;border-radius:50%;flex:0 0 auto}
+
 /* ── באנרים ────────────────────────────────────────────────────────────── */
 .note{border:1px solid var(--rule);border-radius:var(--r);padding:.6rem .8rem;
   margin-bottom:1rem;font-size:.88rem;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
@@ -132,6 +172,13 @@ footer a{color:var(--teal)}
 
 @media (max-width:720px){
   .head{gap:.6rem} .clinic{border:0;padding:0;width:100%;font-size:.9rem}
+  /* הלוח לא מתכווץ — הוא מתהפך לרשימת ימים. אותו DOM, סדר יום-ראשי. */
+  .board{grid-auto-flow:row!important;grid-template-rows:none!important;
+    grid-template-columns:1fr!important;gap:.3rem}
+  .board .lbl{display:none}
+  .board .cellpart{display:block}
+  .board .bhead{margin-top:.6rem}
+  .board .bcell{min-height:0}
   .card{padding:.8rem}
   th,td{padding:.45rem .4rem}
   /* טבלאות רשומות מתהפכות לכרטיסים — הטבלה לא מתכווצת, היא מתפרקת.
@@ -164,7 +211,8 @@ footer a{color:var(--teal)}
       <span class="grow"></span>
     </div>
     <nav id="nav">
-      <button data-tab="employees" aria-current="true">עובדים</button>
+      <button data-tab="board" aria-current="true">לוח שבועי</button>
+      <button data-tab="employees">עובדים</button>
       <button data-tab="settings">הגדרות</button>
     </nav>
   </div>
@@ -173,8 +221,23 @@ footer a{color:var(--teal)}
 <main class="wrap">
   <div id="banners"></div>
 
+  <!-- לוח שבועי -->
+  <section id="tab-board">
+    <div class="bar">
+      <button class="btn ghost sm" id="wkPrev" title="שבוע קודם">→</button>
+      <input type="date" id="wkDate" style="width:auto">
+      <button class="btn ghost sm" id="wkNext" title="שבוע הבא">←</button>
+      <span class="wklabel" id="wkLabel"></span>
+      <span class="grow"></span>
+      <button class="btn ghost" id="wkCopy">העתקת השבוע הקודם</button>
+      <button class="btn ghost" id="wkLock">קביעת הלוח</button>
+    </div>
+    <div id="wkBanner"></div>
+    <div class="scroll"><div class="board" id="board"></div></div>
+  </section>
+
   <!-- ══ עובדים ══════════════════════════════════════════════════════════ -->
-  <section id="tab-employees">
+  <section id="tab-employees" hidden>
     <div class="bar">
       <h2>צוות המרפאה</h2>
       <span class="grow"></span>
@@ -316,6 +379,27 @@ footer a{color:var(--teal)}
       <span class="grow"></span>
       <button class="btn danger" id="empArchive" value="archive" type="button" hidden>ארכוב</button>
     </div>
+  </form>
+</dialog>
+
+<!-- בורר עובד למשמרת -->
+<dialog id="pickDlg">
+  <form method="dialog">
+    <div class="dh"><h3 id="pickTitle"></h3></div>
+    <div class="db">
+      <label class="f"><span>חיפוש</span><input type="text" id="pickSearch" placeholder="שם או קבוצה"></label>
+      <div id="pickList"></div>
+    </div>
+    <div class="da"><button class="btn ghost" value="cancel">סגירה</button></div>
+  </form>
+</dialog>
+
+<!-- מגבלות העובד -->
+<dialog id="infoDlg">
+  <form method="dialog">
+    <div class="dh"><h3 id="infoTitle"></h3></div>
+    <div class="db" id="infoBody"></div>
+    <div class="da"><button class="btn ghost" value="cancel">סגירה</button></div>
   </form>
 </dialog>
 
@@ -502,7 +586,7 @@ function availGrid(table, opts) {
 }
 
 /* ══ טאבים ═══════════════════════════════════════════════════════════════ */
-var TABS = ['employees', 'settings'];
+var TABS = ['board', 'employees', 'settings'];
 function showTab(name) {
   TABS.forEach(function (t) { $('tab-' + t).hidden = (t !== name); });
   Array.from($('nav').children).forEach(function (b) {
@@ -513,6 +597,256 @@ $('nav').addEventListener('click', function (e) {
   var b = e.target.closest('button[data-tab]');
   if (b) showTab(b.dataset.tab);
 });
+
+/* ══ לוח שבועי ═══════════════════════════════════════════════════════════ */
+var curWeek = S.weekStartOf(S.todayISO());
+
+function weekOf(ws) {
+  if (!state.weeks[ws]) state.weeks[ws] = { locked: false, assignments: [], dayNotes: {}, demandOverride: null };
+  return state.weeks[ws];
+}
+function empById(id) { return state.employees.find(function (e) { return e.id === id; }); }
+function isBirthday(e, iso) { return !!e.birthDate && e.birthDate.slice(5) === iso.slice(5); }
+
+function renderBoard() {
+  var st = state.settings, wk = weekOf(curWeek);
+  var days = st.activeDays.slice().sort(function (a, b) { return a - b; });
+  var parts = st.parts;
+  var board = $('board');
+  board.textContent = '';
+  board.classList.toggle('locked', !!wk.locked);
+  // סדר ה-DOM הוא יום-ראשי; במובייל אותו DOM נקרא כרשימת ימים.
+  board.style.gridTemplateRows = 'auto repeat(' + parts.length + ',minmax(0,1fr))';
+  board.style.gridTemplateColumns = 'auto repeat(' + days.length + ',minmax(10.5rem,1fr))';
+
+  $('wkDate').value = curWeek;
+  $('wkLabel').textContent = weekLabel(curWeek);
+
+  board.append(el('div', { className: 'lbl' }));
+  parts.forEach(function (p) {
+    board.append(el('div', { className: 'lbl', textContent: p.label + ' ' + p.start + '–' + p.end }));
+  });
+
+  days.forEach(function (d) {
+    var iso = S.addDaysISO(curWeek, d);
+    var head = el('div', { className: 'bhead' });
+    head.append(el('span', { textContent: DAY[d] }),
+                el('span', { className: 'dt num', textContent: (+iso.slice(8, 10)) + '.' + (+iso.slice(5, 7)) }));
+    var bdays = state.employees.filter(function (e) { return e.active !== false && isBirthday(e, iso); });
+    if (bdays.length) {
+      head.append(el('span', { className: 'grow' }),
+        el('span', { className: 'bdg', title: 'יום הולדת: ' + bdays.map(S.fullName).join(', '),
+                     textContent: 'יום הולדת' }));
+    }
+    board.append(head);
+
+    parts.forEach(function (p) {
+      var isOpen = dayPartsOf(d).indexOf(p.key) !== -1;
+      var cell = el('div', { className: 'bcell' + (isOpen ? '' : ' closed') });
+      cell.append(el('div', { className: 'cellpart', textContent: p.label + ' · ' + p.start + '–' + p.end }));
+      if (!isOpen) { cell.append(el('span', { textContent: 'סגור' })); board.append(cell); return; }
+
+      wk.assignments.filter(function (a) { return a.day === d && a.part === p.key; })
+        .map(function (a) { return { a: a, e: empById(a.employeeId) }; })
+        .sort(function (x, y) {
+          if (!x.e || !y.e) return x.e ? -1 : 1;
+          var rx = (groupOfEmp(x.e).rank || 9), ry = (groupOfEmp(y.e).rank || 9);
+          return rx - ry || S.fullName(x.e).localeCompare(S.fullName(y.e), 'he');
+        })
+        .forEach(function (r) { cell.append(empChip(r.a, r.e, d, p.key, iso)); });
+
+      var add = el('button', { type: 'button', className: 'addbtn', textContent: '+ הוספה' });
+      add.onclick = function () { openPicker(d, p.key); };
+      cell.append(add);
+      board.append(cell);
+    });
+  });
+  renderWeekBanner();
+}
+
+function empChip(a, e, d, partKey, iso) {
+  var chip = el('div', { className: 'emp' });
+  if (!e) {
+    // שיבוץ שמצביע על עובד שכבר לא קיים — מציגים, לא קורסים ולא משמיטים בשקט
+    chip.append(el('span', { className: 'dot' }),
+      el('span', { className: 'nm', style: 'color:var(--muted)',
+                   textContent: 'עובד שנמחק (#' + a.employeeId + ')' }));
+  } else {
+    var g = groupOfEmp(e);
+    chip.append(el('span', { className: 'dot', style: '--dot:' + groupColor(g.key), title: g.name }));
+    var nm = el('button', { type: 'button', className: 'nm', textContent: S.fullName(e),
+                            title: 'הצגת המגבלות של ' + S.fullName(e) });
+    nm.onclick = function () { openInfo(e); };
+    chip.append(nm);
+    if (e.active === false) chip.append(el('span', { className: 'bdg', textContent: 'בארכיון' }));
+    if (isBirthday(e, iso)) chip.append(el('span', { className: 'bdg', textContent: 'יום הולדת' }));
+    if (a.isManual) chip.append(el('span', { className: 'bdg', title: 'שובץ ידנית', textContent: 'ידני' }));
+    var why = S.manualAddConflicts(state, curWeek, d, partKey, e.id);
+    if (why.length) {
+      chip.classList.add('warn');
+      chip.append(el('span', { className: 'bdg w', title: why.join(' · '), textContent: 'מתנגש' }));
+    }
+  }
+  var x = el('button', { type: 'button', className: 'x', textContent: '✕', title: 'הסרה מהמשמרת' });
+  x.onclick = function () {
+    var wk = weekOf(curWeek);
+    wk.assignments.splice(wk.assignments.indexOf(a), 1);
+    save(); renderBoard();
+  };
+  chip.append(x);
+  return chip;
+}
+
+function weekLabel(ws) {
+  var dm = function (i) { return (+i.slice(8, 10)) + '.' + (+i.slice(5, 7)); };
+  var n = Math.round((S.parseISO(ws) - S.parseISO(S.weekStartOf(S.todayISO()))) / (7 * 86400000));
+  var rel = n === 0 ? 'השבוע' : n === 1 ? 'שבוע הבא' : n === -1 ? 'שבוע שעבר'
+          : n > 0 ? 'בעוד ' + n + ' שבועות' : 'לפני ' + (-n) + ' שבועות';
+  return dm(ws) + '–' + dm(S.addDaysISO(ws, 6)) + ' · ' + rel;
+}
+
+function renderWeekBanner() {
+  var wk = weekOf(curWeek), box = $('wkBanner');
+  box.textContent = '';
+  $('wkLock').textContent = wk.locked ? 'פתיחה לעריכה' : 'קביעת הלוח';
+  $('wkCopy').disabled = !!wk.locked;
+  if (wk.locked) box.append(el('div', { className: 'note info',
+    textContent: 'הלוח קבוע. לעריכה — ״פתיחה לעריכה״.' }));
+
+  var lines = [];
+  (state.absences || []).forEach(function (ab) {
+    var e = empById(ab.employeeId);
+    if (!e) return;
+    var covered = [];
+    for (var i = 0; i <= 6; i++) {
+      var iso = S.addDaysISO(curWeek, i);
+      if (iso >= ab.startDate && iso <= (ab.endDate || ab.startDate)) covered.push(DAY[i]);
+    }
+    if (covered.length) lines.push(S.fullName(e) + ' — ' + covered.join(', ') +
+      (ab.part && ab.part !== 'either' ? ' (' + partLabel(ab.part) + ')' : ''));
+  });
+  if (lines.length) box.append(el('div', { className: 'note warn' }, [
+    el('span', { className: 'grow', textContent: 'מגבלות השבוע: ' + lines.join(' · ') })]));
+}
+
+function gotoWeek(ws) { curWeek = ws; renderBoard(); }
+$('wkPrev').onclick = function () { gotoWeek(S.addDaysISO(curWeek, -7)); };
+$('wkNext').onclick = function () { gotoWeek(S.addDaysISO(curWeek, 7)); };
+$('wkDate').onchange = function () { if (this.value) gotoWeek(S.weekStartOf(this.value)); };
+
+$('wkLock').onclick = function () {
+  var wk = weekOf(curWeek);
+  if (wk.locked) { wk.locked = false; save(); renderBoard(); return; }
+  ask('קביעת הלוח', 'הלוח של ' + weekLabel(curWeek) + ' ייסגר לעריכה. אפשר לפתוח אותו שוב בכל רגע.', 'קביעה')
+    .then(function (yes) { if (yes) { wk.locked = true; save(); renderBoard(); } });
+};
+
+$('wkCopy').onclick = function () {
+  var prev = state.weeks[S.addDaysISO(curWeek, -7)];
+  if (!prev || !prev.assignments.length) return banner('bad', 'בשבוע הקודם אין שיבוצים להעתיק.');
+  var cur = weekOf(curWeek);
+  var go = function () {
+    cur.assignments = prev.assignments.map(function (a) {
+      return { day: a.day, part: a.part, employeeId: a.employeeId, isManual: true,
+               isOpener: !!a.isOpener, note: a.note || '',
+               customStart: a.customStart || null, customEnd: a.customEnd || null };
+    });
+    save(); renderBoard();
+    banner('info', 'הועתקו ' + cur.assignments.length + ' שיבוצים מהשבוע הקודם.');
+  };
+  if (!cur.assignments.length) return go();
+  ask('העתקת השבוע הקודם', 'כל השיבוצים הקיימים בשבוע הזה יימחקו ויוחלפו ב־' +
+      prev.assignments.length + ' שיבוצים מהשבוע הקודם.', 'החלפה')
+    .then(function (yes) { if (yes) go(); });
+};
+
+/* ── בורר עובד ─────────────────────────────────────────────────────────── */
+var pickCtx = null;
+function openPicker(day, partKey) {
+  pickCtx = { day: day, part: partKey };
+  $('pickTitle').textContent = 'הוספה ל' + DAY[day] + ' · ' + partLabel(partKey);
+  $('pickSearch').value = '';
+  renderPickList();
+  $('pickDlg').showModal();
+  $('pickSearch').focus();
+}
+$('pickSearch').oninput = renderPickList;
+
+function renderPickList() {
+  var box = $('pickList'), q = $('pickSearch').value.trim();
+  var taken = weekOf(curWeek).assignments.filter(function (a) {
+    return a.day === pickCtx.day && a.part === pickCtx.part;
+  }).map(function (a) { return a.employeeId; });
+  box.textContent = '';
+
+  var list = state.employees.filter(function (e) {
+    if (e.active === false || taken.indexOf(e.id) !== -1) return false;
+    if (!q) return true;
+    return (S.fullName(e) + ' ' + groupOfEmp(e).name).indexOf(q) !== -1;
+  }).map(function (e) {
+    return { e: e, why: S.manualAddConflicts(state, curWeek, pickCtx.day, pickCtx.part, e.id) };
+  }).sort(function (x, y) {
+    if (!x.why.length !== !y.why.length) return x.why.length ? 1 : -1;   // הפנויים קודם
+    var rx = (groupOfEmp(x.e).rank || 9), ry = (groupOfEmp(y.e).rank || 9);
+    return rx - ry || S.fullName(x.e).localeCompare(S.fullName(y.e), 'he');
+  });
+
+  if (!list.length) {
+    box.append(el('p', { className: 'sub', textContent: 'אין עובדים זמינים להוספה.' }));
+    return;
+  }
+  list.forEach(function (r) {
+    var g = groupOfEmp(r.e);
+    var row = el('button', { type: 'button', className: 'pickrow', 'data-blocked': r.why.length ? '1' : '0' });
+    var mid = el('span', { className: 'grow' });
+    mid.append(el('b', { textContent: S.fullName(r.e) }));
+    if (r.why.length) mid.append(el('div', { className: 'why', textContent: r.why.join(' · ') }));
+    row.append(el('span', { className: 'pd', style: 'background:' + groupColor(g.key) }),
+               mid, el('span', { className: 'tag', textContent: g.name }));
+    row.onclick = function () {
+      // מגבלה כאן היא אזהרה, לא חסימה — המנהל רואה את הסיבה ומחליט
+      var doAdd = function () {
+        weekOf(curWeek).assignments.push({ day: pickCtx.day, part: pickCtx.part, employeeId: r.e.id,
+          isManual: true, isOpener: false, note: '', customStart: null, customEnd: null });
+        save(); renderBoard(); $('pickDlg').close();
+      };
+      if (!r.why.length) return doAdd();
+      ask('שיבוץ למרות מגבלה', S.fullName(r.e) + ' — ' + r.why.join(' · ') + '. לשבץ בכל זאת?', 'שיבוץ')
+        .then(function (yes) { if (yes) doAdd(); });
+    };
+    box.append(row);
+  });
+}
+
+/* ── מגבלות העובד ──────────────────────────────────────────────────────── */
+function openInfo(e) {
+  var g = groupOfEmp(e), pr = state.prefs[e.id] || S.defaultPrefFor(e, state.settings);
+  $('infoTitle').textContent = S.fullName(e);
+  var b = $('infoBody'); b.textContent = '';
+  var line = function (k, v) {
+    if (!v) return;
+    b.append(el('div', { style: 'display:flex;gap:.7rem;padding:.3rem 0;border-bottom:1px solid var(--rule)' }, [
+      el('span', { style: 'flex:0 0 8.5rem;color:var(--muted);font-size:.85rem', textContent: k }),
+      el('span', { className: 'grow', textContent: v })]));
+  };
+  line('קבוצה', g.name);
+  line('משמרות מותרות', (e.allowedParts || []).length ? e.allowedParts.map(partLabel).join(', ') : 'כל המשמרות');
+  line('חסום', S.fmtConstraintDays(e.hardUnavailable, state.settings));
+  line('עדיף שלא', S.fmtConstraintDays(e.softUnavailable, state.settings));
+  if (g.isTrainee) line('ימי עבודה קבועים', S.fmtConstraintDays(state.traineeSlots[e.id] || [], state.settings));
+  else line('ימים מועדפים', (e.preferredDays || []).map(function (d) { return DAY[d]; }).join(', '));
+  line('יעד שבועי', pr.targetMin + '–' + pr.targetMax + ' משמרות');
+  line('העדפה', pr.prefer === 'any' ? 'ללא' : partLabel(pr.prefer));
+  line('היעדרויות השבוע', (state.absences || []).filter(function (a) {
+    return a.employeeId === e.id && (a.endDate || a.startDate) >= curWeek && a.startDate <= S.addDaysISO(curWeek, 6);
+  }).map(function (a) {
+    return fmtDate(a.startDate) + (a.endDate && a.endDate !== a.startDate ? '–' + fmtDate(a.endDate) : '') +
+      (a.part && a.part !== 'either' ? ' (' + partLabel(a.part) + ')' : '');
+  }).join(' · '));
+  line('משובץ השבוע', weekOf(curWeek).assignments.filter(function (a) {
+    return a.employeeId === e.id; }).length + ' משמרות');
+  $('infoDlg').showModal();
+}
 
 /* ══ עובדים ══════════════════════════════════════════════════════════════ */
 function renderEmployees() {
@@ -942,11 +1276,11 @@ window.addEventListener('storage', function (ev) {
 });
 
 /* ══ הפעלה ═══════════════════════════════════════════════════════════════ */
-function renderAll() { renderSettings(); renderEmployees(); }
+function renderAll() { renderSettings(); renderEmployees(); renderBoard(); }
 state = load();
 renderAll();
 backupNag();
-if (!state.employees.length) showTab('settings');
+showTab(state.employees.length ? 'board' : 'settings');
 })();
 </script>
 </body>
