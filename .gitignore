@@ -1,4 +1,6 @@
 node_modules/
-_mut.js
-_check.mjs
+_*.js
+_*.mjs
+_*.py
+_*.html
 promo/
