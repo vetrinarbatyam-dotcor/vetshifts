@@ -144,9 +144,11 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 .emp .x{background:none;border:0;color:var(--muted);cursor:pointer;padding:0 .15rem;line-height:1}
 .emp .x:hover{color:var(--bad)}
 .emp.warn{border-color:#E6D3A0;background:var(--warn-bg)}
+.emp.bad{border-color:#E3C2C2;background:var(--bad-bg)}
 .bdg{font-size:.68rem;color:var(--muted);border:1px solid var(--rule);border-radius:3px;
   padding:0 .25rem;flex:0 0 auto}
 .bdg.w{color:var(--warn);border-color:#E6D3A0}
+.bdg.b{color:var(--bad);border-color:#E3C2C2;font-weight:700}
 .addbtn{background:none;border:1px dashed var(--rule);border-radius:var(--r);color:var(--muted);
   cursor:pointer;font-size:.8rem;padding:.2rem;margin-top:auto}
 .addbtn:hover{border-color:var(--teal);color:var(--teal)}
@@ -157,7 +159,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
   margin-bottom:.3rem;text-align:start;font:inherit}
 .pickrow:hover{border-color:var(--teal)}
 .pickrow .why{color:var(--warn);font-size:.78rem}
-.pickrow[data-blocked="1"]{background:var(--warn-bg);border-color:#E6D3A0}
+.pickrow[data-blocked="1"]{background:var(--bad-bg);border-color:#E3C2C2}
+.pickrow[data-blocked="1"] .why{color:var(--bad)}
+.pickrow[data-blocked="soft"]{background:var(--warn-bg);border-color:#E6D3A0}
 .pickrow .grow{flex:1;min-width:0}
 .pickrow .pd{width:.5rem;height:.5rem;border-radius:50%;flex:0 0 auto}
 
@@ -457,6 +461,26 @@ footer a{color:var(--teal)}
       </div>
 
       <div class="card">
+        <h3>רוצים קודם לשחק? טענו מרפאת דמו</h3>
+        <p class="where">איפה: <b>הגדרות ← התנסות ואיפוס ← טעינת נתוני דמו</b></p>
+        <p>לחיצה אחת מייצרת מרפאה שלמה: שמונה עובדים עם מגבלות אמיתיות, שלוש משמרות,
+          מחלה וחופשה, עובד בחפיפה, ימי כירורגיה וקרדיולוגיה, יום הולדת בשבוע הנוכחי
+          וארבעה שבועות משובצים קדימה. אפשר להזיז, למחוק, ליצור מחדש ולייצא תמונה —
+          בלי לפחד לשבור משהו.</p>
+        <p style="margin-bottom:0">כשמסיימים: <b>מחיקה והתחלה נקייה</b>, ומזינים את המרפאה שלכם.</p>
+      </div>
+
+      <div class="card">
+        <h3>דף קשר של הצוות</h3>
+        <p class="where">איפה: <b>עובדים ← דף קשר</b></p>
+        <p>מוריד דף מסודר עם כל העובדים הפעילים: שם, תפקיד, טלפון, מייל ותאריך לידה.
+          בטלפון אפשר להתקשר ולשלוח מייל בלחיצה ישר מהדף, ובמחשב הוא מודפס יפה
+          (Ctrl+P) לתלייה בחדר הצוות.</p>
+        <p style="margin-bottom:0" class="callout">הדף מכיל פרטים אישיים של עובדים.
+          שמרו ושתפו אותו בהתאם.</p>
+      </div>
+
+      <div class="card">
         <h3>בקצרה, איך מתחילים</h3>
         <ol class="steps">
           <li><b>הגדרות</b> — שם המרפאה, ימי הפעילות, שעות המשמרות ושמות קבוצות התפקיד.</li>
@@ -478,6 +502,7 @@ footer a{color:var(--teal)}
     <div class="bar">
       <h2>צוות המרפאה</h2>
       <span class="grow"></span>
+      <button class="btn ghost" id="contactsBtn" title="דף אנשי קשר להורדה והדפסה">דף קשר</button>
       <button class="btn" id="addEmp">הוספת עובד</button>
     </div>
     <p class="sub">כל עובד נושא את הפרטים האישיים שלו ואת מגבלות הזמינות — עליהן מתבסס מחולל המשמרות.
@@ -586,9 +611,17 @@ footer a{color:var(--teal)}
     </div>
 
     <div class="card">
-      <h3>איפוס</h3>
-      <p class="sub">מחיקת כל הנתונים מהדפדפן והתחלה מחדש. לא ניתן לבטל.</p>
-      <button class="btn danger" id="doReset">מחיקת כל הנתונים</button>
+      <h3>התנסות ואיפוס</h3>
+      <p class="sub">רוצים להבין מה הכלי עושה לפני שמזינים את הצוות האמיתי?
+        טענו מרפאת דמו מלאה — שמונה עובדים, שלוש משמרות, מחלה וחופשה, עובד בחפיפה,
+        ימי כירורגיה וקרדיולוגיה, יום הולדת ו<b>ארבעה שבועות משובצים</b>.
+        שחקו כמה שתרצו, ואז מוחקים ומתחילים נקי.</p>
+      <div class="bar" style="margin:0">
+        <button class="btn" id="loadDemo">טעינת נתוני דמו</button>
+        <button class="btn danger" id="doReset">מחיקה והתחלה נקייה</button>
+      </div>
+      <p class="sub" style="margin:.8rem 0 0">שתי הפעולות מוחקות את מה שיש עכשיו בדפדפן.
+        אם כבר הזנתם נתונים אמיתיים — גבו אותם קודם לקובץ.</p>
     </div>
   </section>
 </main>
@@ -823,6 +856,15 @@ function load() {
   catch (e) { banner('bad', 'הנתונים השמורים לא נקראו והוחלפו בברירת מחדל. אם יש לכם קובץ גיבוי — שחזרו ממנו.'); return defaults(); }
 }
 
+/** האם יש בכלל נתונים? weekOf יוצר שבוע ריק בכל רינדור, ולכן ספירת מפתחות
+    weeks אינה עדות — בודקים תוכן. */
+function hasRealData() {
+  return !!(state.employees.length || Object.keys(state.weeks).some(function (w) {
+    var k = state.weeks[w];
+    return (k.assignments || []).length || Object.keys(k.dayNotes || {}).length || k.locked;
+  }));
+}
+
 /** שבוע ריק שנוצר רק מרינדור אינו נתון — מנקים לפני שמירה כדי שלא יצטבר בגיבוי. */
 function pruneEmptyWeeks() {
   Object.keys(state.weeks).forEach(function (w) {
@@ -863,10 +905,7 @@ function banner(kind, text, actionLabel, action) {
 function backupNag() {
   var last = state.meta.lastBackupAt;
   var stale = !last || (Date.parse(S.todayISO()) - Date.parse(last)) / 86400000 > 21;
-  var hasData = state.employees.length || Object.keys(state.weeks).some(function (w) {
-    var k = state.weeks[w];
-    return (k.assignments || []).length || Object.keys(k.dayNotes || {}).length;
-  });
+  var hasData = hasRealData();
   if (!stale || !hasData) return;
   var n = banner('warn', last ? 'הגיבוי האחרון היה ב־' + fmtDate(last) + '. הנתונים יושבים בדפדפן הזה בלבד.'
                              : 'עוד לא גיביתם. הנתונים יושבים בדפדפן הזה בלבד — ניקוי היסטוריית גלישה ימחק אותם.',
@@ -1078,8 +1117,10 @@ function empChip(a, e, d, partKey, iso) {
     if (a.note) chip.append(el('span', { className: 'bdg', title: a.note, textContent: 'הערה' }));
     var why = S.manualAddConflicts(state, curWeek, d, partKey, e.id);
     if (why.length) {
-      chip.classList.add('warn');
-      chip.append(el('span', { className: 'bdg w', title: why.join(' · '), textContent: 'מתנגש' }));
+      var isHard = S.hasHard(why);
+      chip.classList.add(isHard ? 'bad' : 'warn');
+      chip.append(el('span', { className: 'bdg ' + (isHard ? 'b' : 'w'), title: S.reasonText(why),
+        textContent: isHard ? 'מתנגש' : 'ויתור' }));
     }
   }
   var x = el('button', { type: 'button', className: 'x', textContent: '✕', title: 'הסרה מהמשמרת' });
@@ -1179,8 +1220,10 @@ function renderPickList() {
     if (!q) return true;
     return (S.fullName(e) + ' ' + groupOfEmp(e).name).indexOf(q) !== -1;
   }).map(function (e) {
-    return { e: e, why: S.manualAddConflicts(state, curWeek, pickCtx.day, pickCtx.part, e.id) };
+    var why = S.manualAddConflicts(state, curWeek, pickCtx.day, pickCtx.part, e.id);
+    return { e: e, why: why, hard: S.hasHard(why) };
   }).sort(function (x, y) {
+    if (x.hard !== y.hard) return x.hard ? 1 : -1;                        // חסומים אחרונים
     if (!x.why.length !== !y.why.length) return x.why.length ? 1 : -1;   // הפנויים קודם
     var rx = (groupOfEmp(x.e).rank || 9), ry = (groupOfEmp(y.e).rank || 9);
     return rx - ry || S.fullName(x.e).localeCompare(S.fullName(y.e), 'he');
@@ -1192,10 +1235,11 @@ function renderPickList() {
   }
   list.forEach(function (r) {
     var g = groupOfEmp(r.e);
-    var row = el('button', { type: 'button', className: 'pickrow', 'data-blocked': r.why.length ? '1' : '0' });
+    var row = el('button', { type: 'button', className: 'pickrow',
+      'data-blocked': r.hard ? '1' : (r.why.length ? 'soft' : '0') });
     var mid = el('span', { className: 'grow' });
     mid.append(el('b', { textContent: S.fullName(r.e) }));
-    if (r.why.length) mid.append(el('div', { className: 'why', textContent: r.why.join(' · ') }));
+    if (r.why.length) mid.append(el('div', { className: 'why', textContent: S.reasonText(r.why) }));
     row.append(el('span', { className: 'pd', style: 'background:' + groupColor(g.key) }),
                mid, el('span', { className: 'tag', textContent: g.name }));
     row.onclick = function () {
@@ -1205,8 +1249,9 @@ function renderPickList() {
           isManual: true, isOpener: false, note: '', customStart: null, customEnd: null });
         save(); renderBoard(); $('pickDlg').close();
       };
-      if (!r.why.length) return doAdd();
-      ask('שיבוץ למרות מגבלה', S.fullName(r.e) + ' — ' + r.why.join(' · ') + '. לשבץ בכל זאת?', 'שיבוץ')
+      // ויתור על מגבלה רכה הוא לגיטימי — שואלים רק על הפרה קשה
+      if (!r.hard) return doAdd();
+      ask('שיבוץ למרות מגבלה', S.fullName(r.e) + ' — ' + S.reasonText(r.why) + '. לשבץ בכל זאת?', 'שיבוץ')
         .then(function (yes) { if (yes) doAdd(); });
     };
     box.append(row);
@@ -1795,8 +1840,10 @@ function openAssign(a, e, d, partKey) {
   line('משובץ השבוע', weekOf(curWeek).assignments.filter(function (x) {
     return x.employeeId === e.id; }).length + ' משמרות');
   var why = S.manualAddConflicts(state, curWeek, d, partKey, e.id);
-  if (why.length) box.append(el('div', { className: 'note warn', style: 'margin:.6rem 0 0' }, [
-    el('span', { className: 'grow', textContent: why.join(' · ') })]));
+  if (why.length) box.append(el('div', {
+    className: 'note ' + (S.hasHard(why) ? 'bad' : 'warn'), style: 'margin:.6rem 0 0' }, [
+    el('span', { className: 'grow',
+      textContent: (S.hasHard(why) ? 'מתנגש: ' : 'ויתור על בקשה רכה: ') + S.reasonText(why) })]));
 
   // פותח — רק אם ההגדרות מאפשרות את זה ביום ובמשמרת האלה
   var canOpen = st.opener && st.opener.part === partKey && (st.opener.days || []).indexOf(d) !== -1;
@@ -2323,13 +2370,242 @@ $('importFile').onchange = function () {
 };
 
 $('doReset').onclick = function () {
-  ask('מחיקת כל הנתונים', 'כל העובדים, ההגדרות והשבועות יימחקו מהדפדפן הזה. לא ניתן לבטל.', 'מחיקה')
+  ask('מחיקה והתחלה נקייה', 'כל העובדים, ההגדרות והשבועות יימחקו מהדפדפן הזה. לא ניתן לבטל.', 'מחיקה')
     .then(function (yes) {
       if (!yes) return;
       state = defaults(); save(); renderAll();
       banner('info', 'הכל אופס.');
     });
 };
+
+/* ══ נתוני דמו ═══════════════════════════════════════════════════════════
+   מרפאה מלאה להתנסות: שלוש משמרות, מגבלות קשות ורכות, מחלה וחופשה,
+   חפיפות, מומחים, פותחים, יום הולדת וארבעה שבועות משובצים.
+   הכל נבנה דרך אותו מנוע שמייצר לוח אמיתי — לא נתונים מזויפים.        */
+function demoState() {
+  var ws = S.weekStartOf(S.todayISO());
+  var d = defaults();
+  var st = d.settings;
+
+  st.clinicName = 'מרפאה וטרינרית שדות (דמו)';
+  st.parts = [
+    { key: 'p1', label: 'בוקר', start: '08:00', end: '14:00' },
+    { key: 'p2', label: 'אחר הצהריים', start: '16:00', end: '20:00' },
+    { key: 'p3', label: 'ערב', start: '20:00', end: '22:30' }
+  ];
+  st.activeDays = [0, 1, 2, 3, 4, 5];
+  // ערב פועל רק בשני ובחמישי — ככה נראית מרפאה עם שעות מורחבות פעמיים בשבוע
+  st.dayParts = { '0': ['p1', 'p2'], '1': ['p1', 'p2', 'p3'], '2': ['p1', 'p2'],
+                  '3': ['p1', 'p2'], '4': ['p1', 'p2', 'p3'], '5': ['p1'] };
+  st.opener = { part: 'p1', start: '07:30', days: [0, 1, 2, 3, 4] };
+  st.roleGroups = [
+    { key: 'vet', name: 'וטרינר/ית', rank: 1 },
+    { key: 'assistant', name: 'אסיסטנט/ית', rank: 2 },
+    { key: 'trainee', name: 'חפיפות', rank: 3, isTrainee: true }
+  ];
+  st.minDoubles = true;
+
+  // יום הולדת שנופל בתוך השבוע הנוכחי — כדי שהתג ייראה מיד
+  var bday = S.addDaysISO(ws, 3);
+  var bd = function (year) { return year + bday.slice(4); };
+
+  d.employees = [
+    { id: 1, firstName: 'ד״ר יעל', lastName: 'אבידן', birthDate: '1979-03-11',
+      email: 'yael@sadot-vet.co.il', phone: '0521110011', role: 'owner', active: true,
+      allowedParts: [], hardUnavailable: [], softUnavailable: [], preferredDays: [0, 1] },
+    { id: 2, firstName: 'ד״ר אורי', lastName: 'כהן', birthDate: '1986-11-02',
+      email: 'ori@sadot-vet.co.il', phone: '0522220022', role: 'vet', active: true,
+      allowedParts: ['p1'], hardUnavailable: [], softUnavailable: [], preferredDays: [] },
+    { id: 3, firstName: 'ד״ר רותם', lastName: 'מזרחי', birthDate: '1991-06-24',
+      email: 'rotem@sadot-vet.co.il', phone: '0523330033', role: 'vet', active: true,
+      allowedParts: [], hardUnavailable: [[2, 'p1']], softUnavailable: [[4, 'p1'], [4, 'p2']],
+      preferredDays: [3] },
+    { id: 4, firstName: 'ד״ר דנה', lastName: 'שגב', birthDate: bd('1988'),
+      email: 'dana@sadot-vet.co.il', phone: '0524440044', role: 'vet', active: true,
+      allowedParts: [], hardUnavailable: [[5, 'p1']], softUnavailable: [], preferredDays: [1, 2] },
+    { id: 5, firstName: 'מאיה', lastName: 'ברנס', birthDate: '1995-09-30',
+      email: 'maya@sadot-vet.co.il', phone: '0525550055', role: 'assistant', active: true,
+      allowedParts: [], hardUnavailable: [], softUnavailable: [[0, 'p2']], preferredDays: [] },
+    { id: 6, firstName: 'יעל', lastName: 'אדרי', birthDate: '1999-01-17',
+      email: 'yaela@sadot-vet.co.il', phone: '0526660066', role: 'assistant', active: true,
+      allowedParts: [], hardUnavailable: [], softUnavailable: [], preferredDays: [4] },
+    { id: 7, firstName: 'נועה', lastName: 'גולן', birthDate: '2001-04-08',
+      email: 'noa@sadot-vet.co.il', phone: '0527770077', role: 'assistant', active: true,
+      allowedParts: ['p2', 'p3'], hardUnavailable: [], softUnavailable: [], preferredDays: [] },
+    { id: 8, firstName: 'איתי', lastName: 'לוין', birthDate: '2003-12-05',
+      email: 'itay@sadot-vet.co.il', phone: '0528880088', role: 'trainee', active: true,
+      allowedParts: [], hardUnavailable: [], softUnavailable: [], preferredDays: [] },
+    { id: 9, firstName: 'שירן', lastName: 'פרץ', birthDate: '1993-07-19',
+      email: 'shiran@sadot-vet.co.il', phone: '0529990099', role: 'assistant', active: false,
+      allowedParts: [], hardUnavailable: [], softUnavailable: [], preferredDays: [] }
+  ];
+
+  var P = function (g, mn, mx, pr, md, nt) {
+    return { roleGroup: g, targetMin: mn, targetMax: mx, prefer: pr, maxDoubles: md, notes: nt || '' };
+  };
+  d.prefs = {
+    1: P('vet', 3, 5, 'any', 1, 'בעלת המרפאה — עדיף בתחילת השבוע'),
+    2: P('vet', 3, 6, 'p1', 2, 'בוקר בלבד'),
+    3: P('vet', 4, 6, 'any', 2, ''),
+    4: P('vet', 3, 5, 'any', 1, ''),
+    5: P('assistant', 4, 6, 'any', 2, ''),
+    6: P('assistant', 3, 6, 'p2', 2, ''),
+    7: P('assistant', 2, 3, 'any', 1, 'סטודנטית — עד 3 משמרות'),
+    8: P('trainee', 0, 7, 'any', 7, 'בחפיפה עד סוף החודש'),
+    9: P('assistant', 0, 7, 'any', 7, '')
+  };
+  d.traineeSlots = { 8: [[0, 'p1'], [3, 'p1'], [3, 'p2']] };
+
+  d.specialists = [
+    { id: 21, name: 'כירורגיה', color: '#A63434' },
+    { id: 22, name: 'קרדיולוגיה', color: '#7A5B8F' },
+    { id: 23, name: 'אולטרסאונד', color: '#4A6FA5' }
+  ];
+
+  d.absences = [
+    { id: 31, employeeId: 5, type: 'sick', startDate: S.addDaysISO(ws, 2),
+      endDate: S.addDaysISO(ws, 3), part: 'either', note: 'שפעת' },
+    { id: 32, employeeId: 2, type: 'vacation', startDate: S.addDaysISO(ws, 8),
+      endDate: S.addDaysISO(ws, 10), part: 'either', note: 'חופשה משפחתית' },
+    { id: 33, employeeId: 6, type: 'shift_assignment', startDate: S.addDaysISO(ws, 4),
+      endDate: S.addDaysISO(ws, 4), part: 'p1', note: 'בחינה בבוקר' }
+  ];
+
+  // דרישות: מכוונות כך שרוב הלוח מתמלא, ומשמרת הערב נשארת הדוקה — כדי
+  // שדוח "לא אויש" יופיע ולא יישאר תיאורטי
+  d.demand = [];
+  st.activeDays.forEach(function (day) {
+    (st.dayParts[String(day)] || []).forEach(function (part) {
+      var vets = part === 'p3' ? 1 : (day === 5 ? 2 : 3);
+      var asst = part === 'p3' ? 1 : (day === 5 ? 1 : 2);
+      d.demand.push({ day: day, part: part, roleGroup: 'vet', count: vets });
+      d.demand.push({ day: day, part: part, roleGroup: 'assistant', count: asst });
+    });
+  });
+
+  d.meta = { nextId: 40, lastBackupAt: null, createdAt: S.todayISO() };
+
+  // ── ארבעה שבועות משובצים, דרך אותו מנוע ─────────────────────────────
+  for (var i = 0; i < 4; i++) {
+    var w = S.addDaysISO(ws, 7 * i);
+    var r = S.generate(d, w);
+    var week = { locked: false, dayNotes: {}, demandOverride: null,
+      assignments: r.assignments.map(function (a) {
+        return { day: a.day, part: a.part, employeeId: a.employeeId, isManual: false,
+                 isOpener: false, note: '', customStart: null, customEnd: null };
+      }) };
+
+    // פותח: הווטרינר הראשון בכל בוקר מהימים שההגדרות מתירות
+    st.opener.days.forEach(function (day) {
+      var first = week.assignments.find(function (a) {
+        return a.day === day && a.part === st.opener.part &&
+          (d.prefs[a.employeeId] || {}).roleGroup === 'vet';
+      });
+      if (first) first.isOpener = true;
+    });
+    d.weeks[w] = week;
+  }
+
+  var w0 = ws, w1 = S.addDaysISO(ws, 7), w2 = S.addDaysISO(ws, 14);
+  d.weeks[w0].dayNotes['0:p1'] = { note: 'יום ניתוחים — לא לקבוע ביקורות רגילות', specialistIds: [21] };
+  d.weeks[w0].dayNotes['3:p2'] = { note: 'ד״ר לוי קרדיולוג מבקר · שלוש בדיקות אקו קבועות', specialistIds: [22] };
+  d.weeks[w1].dayNotes['2:p1'] = { note: 'סבב אולטרסאונד', specialistIds: [23] };
+  d.weeks[w1].dayNotes['4:p3'] = { note: 'ערב חיסונים — מגיעים הרבה בלי תור', specialistIds: [] };
+  d.weeks[w2].dayNotes['0:p1'] = { note: 'יום ניתוחים', specialistIds: [21] };
+
+  // שעות מותאמות והערה על שיבוץ בודד
+  var late = d.weeks[w0].assignments.find(function (a) { return a.day === 1 && a.part === 'p1'; });
+  if (late) { late.customStart = '10:00'; late.note = 'מגיעה מאוחר — פגישה בבנק'; }
+  // שיבוץ ידני אחד, כדי שהתג "ידני" ייראה
+  var man = d.weeks[w0].assignments.find(function (a) { return a.day === 2 && a.part === 'p2'; });
+  if (man) man.isManual = true;
+
+  return d;
+}
+
+function loadDemo() {
+  var go = function () {
+    state = demoState();
+    save();
+    curWeek = S.weekStartOf(S.todayISO());
+    demandScope = 'global';
+    renderAll();
+    showTab('board');
+    banner('info', 'נטענו נתוני דמו: ' + state.employees.filter(function (e) { return e.active !== false; }).length +
+      ' עובדים, ארבעה שבועות משובצים, מחלה, חופשה, חפיפות ותחומים. שחקו בחופשיות — ' +
+      'כשתרצו להתחיל את המרפאה שלכם, לחצו ״מחיקה והתחלה נקייה״.');
+  };
+  if (!hasRealData()) return go();
+  ask('טעינת נתוני דמו', 'כל מה שיש עכשיו בדפדפן יימחק ויוחלף במרפאת הדמו. ' +
+      'אם יש לכם נתונים אמיתיים — גבו אותם קודם לקובץ.', 'טעינת דמו')
+    .then(function (yes) { if (yes) go(); });
+}
+$('loadDemo').onclick = loadDemo;
+
+/* ══ דף קשר ══════════════════════════════════════════════════════════════ */
+function contactsHTML() {
+  var esc = function (t) {
+    return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  };
+  var list = state.employees.filter(function (e) { return e.active !== false; })
+    .sort(function (a, b) {
+      return (groupOfEmp(a).rank || 9) - (groupOfEmp(b).rank || 9) ||
+        S.fullName(a).localeCompare(S.fullName(b), 'he');
+    });
+  var rows = list.map(function (e) {
+    var g = groupOfEmp(e);
+    var tel = (e.phone || '').replace(/[^\d+]/g, '');
+    return '<tr>' +
+      '<td class="nm">' + esc(S.fullName(e)) + '</td>' +
+      '<td><span class="tag" style="--dot:' + groupColor(g.key) + '">' + esc(g.name) + '</span></td>' +
+      '<td class="ltr">' + (tel ? '<a href="tel:' + esc(tel) + '">' + esc(e.phone) + '</a>' : '—') + '</td>' +
+      '<td class="ltr">' + (e.email ? '<a href="mailto:' + esc(e.email) + '">' + esc(e.email) + '</a>' : '—') + '</td>' +
+      '<td class="ltr">' + (e.birthDate ? esc(fmtDate(e.birthDate)) : '—') + '</td>' +
+      '</tr>';
+  }).join('\n');
+
+  return '<!doctype html>\n<html lang="he" dir="rtl"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>אנשי קשר — ' + esc(state.settings.clinicName || 'הצוות') + '</title><style>' +
+    ':root{--teal:#0F6E63;--soft:#DCEFEB;--ink:#1E2A2C;--muted:#5F6E6C;--rule:#D5DCD9;--bg:#F6F7F4}' +
+    '*{box-sizing:border-box}body{margin:0;padding:1.6rem 1rem;background:var(--bg);color:var(--ink);' +
+    'font:15px/1.6 Heebo,"Segoe UI",system-ui,sans-serif}' +
+    'main{max-width:min(760px,100%);margin:0 auto}' +
+    'h1{font-family:Georgia,serif;font-size:1.5rem;margin:0 0 .2rem}' +
+    '.sub{color:var(--muted);font-size:.87rem;margin:0 0 1.2rem}' +
+    'table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--rule);border-radius:6px;overflow:hidden}' +
+    'th,td{text-align:start;padding:.55rem .7rem;border-bottom:1px solid var(--rule);vertical-align:middle}' +
+    'thead th{background:var(--soft);color:var(--teal);font-size:.8rem;white-space:nowrap}' +
+    'tbody tr:last-child td{border-bottom:0}' +
+    '.nm{font-weight:700}.ltr{direction:ltr;text-align:right;font-variant-numeric:tabular-nums}' +
+    'a{color:var(--teal)}' +
+    '.tag{display:inline-block;border:1px solid var(--rule);border-radius:6px;padding:.05rem .45rem;' +
+    'font-size:.78rem;color:var(--muted);white-space:nowrap}' +
+    '.tag::before{content:"";display:inline-block;width:.5rem;height:.5rem;border-radius:50%;' +
+    'background:var(--dot,var(--muted));margin-inline-end:.35rem;vertical-align:-.05rem}' +
+    'footer{color:var(--muted);font-size:.82rem;margin-top:1rem}' +
+    '@media print{body{background:#fff;padding:0}table{border-color:#999}' +
+    'thead th{background:#eee;color:#000}a{color:#000;text-decoration:none}}' +
+    '</style></head><body><main>' +
+    '<h1>' + esc(state.settings.clinicName || 'אנשי קשר — הצוות') + '</h1>' +
+    '<p class="sub">אנשי קשר · עודכן ' + esc(fmtDate(S.todayISO())) + '</p>' +
+    '<table><thead><tr><th>שם</th><th>תפקיד</th><th>טלפון</th><th>מייל</th><th>תאריך לידה</th></tr></thead>' +
+    '<tbody>' + (rows || '<tr><td colspan="5">אין עובדים פעילים.</td></tr>') + '</tbody></table>' +
+    '<footer>נוצר ב־VetShifts · ClaudeVet. הקובץ הזה מכיל פרטים אישיים של עובדים — ' +
+    'שמרו אותו בהתאם.</footer></main></body></html>';
+}
+
+function downloadContacts() {
+  if (!state.employees.filter(function (e) { return e.active !== false; }).length) {
+    return banner('bad', 'אין עובדים פעילים לייצא.');
+  }
+  var blob = new Blob([contactsHTML()], { type: 'text/html;charset=utf-8' });
+  var a = el('a', { href: URL.createObjectURL(blob),
+    download: 'אנשי-קשר-' + S.todayISO() + '.html' });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+}
+$('contactsBtn').onclick = downloadContacts;
 
 /* ══ סנכרון בין לשוניות ══════════════════════════════════════════════════ */
 window.addEventListener('storage', function (ev) {

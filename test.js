@@ -390,8 +390,21 @@
     eq(S.manualAddConflicts(st, WS, 0, 'p1', 1).length, 1, 'מגבלה קשה');
     eq(S.manualAddConflicts(st, WS, 0, 'p2', 1).length, 1, 'סוג משמרת');
     eq(S.manualAddConflicts(st, WS, 1, 'p1', 1).length, 0, 'יום נקי');
-    ok(/חופשה/.test(S.manualAddConflicts(st, WS, 0, 'p1', 2)[0]), 'חופשה מזוהה');
-    eq(S.manualAddConflicts(st, WS, 0, 'p1', 99), ['עובד לא נמצא']);
+    ok(/חופשה/.test(S.reasonText(S.manualAddConflicts(st, WS, 0, 'p1', 2))), 'חופשה מזוהה');
+    eq(S.manualAddConflicts(st, WS, 0, 'p1', 99), [{ level: 'hard', text: 'עובד לא נמצא' }]);
+  });
+
+  t('ויתור על מגבלה רכה אינו מסומן כהפרה קשה', function () {
+    // הלוח חייב להבדיל: המנוע מוותר על בקשה רכה בכוונה, וזו לא טעות שלו.
+    var st = mkState({
+      employees: [emp(1, { softUnavailable: [[0, 'p1']] }), emp(2, { hardUnavailable: [[0, 'p1']] })],
+      prefs: { 1: pref(), 2: pref() }
+    });
+    var soft = S.manualAddConflicts(st, WS, 0, 'p1', 1);
+    var hard = S.manualAddConflicts(st, WS, 0, 'p1', 2);
+    eq(soft.length, 1); eq(S.hasHard(soft), false, 'רכה אינה קשה');
+    eq(hard.length, 1); eq(S.hasHard(hard), true, 'קשה היא קשה');
+    ok(S.reasonText(soft).indexOf('להימנע') !== -1, 'הטקסט מנוסח כבקשה');
   });
 
   t('fmtConstraintDays מייצר עברית קריאה', function () {

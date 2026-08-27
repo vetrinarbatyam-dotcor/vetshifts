@@ -328,20 +328,25 @@
     return p ? p.label : key;
   }
 
-  /** סיבות (עברית) שהוספה ידנית מפרה אילוץ. מערך ריק = נקי. */
+  /**
+   * סיבות שהוספה ידנית מפרה אילוץ. מערך ריק = נקי.
+   * כל פריט: {level:'hard'|'soft', text}. ההפרדה חשובה — ויתור על מגבלה רכה
+   * הוא החלטה מכוונת של המנוע, ואסור שייראה בלוח כמו הפרה של מגבלה קשה.
+   */
   function manualAddConflicts(state, weekStart, day, part, empId) {
     var st = state.settings, parts = (st.parts || []).map(function (p) { return p.key; });
     var e = (state.employees || []).find(function (x) { return x.id === empId; });
-    if (!e) return ['עובד לא נמצא'];
-    var reasons = [], dayHe = DAY_HE[day] || String(day), partHe = partLabel(st, part);
+    if (!e) return [{ level: 'hard', text: 'עובד לא נמצא' }];
+    var out = [], dayHe = DAY_HE[day] || String(day), partHe = partLabel(st, part);
+    var hard = function (t) { out.push({ level: 'hard', text: t }); };
 
     if (pairsToSet(e.hardUnavailable, parts).has(K(day, part)))
-      reasons.push('מגבלה קשה: חסימה ביום ' + dayHe + ' ' + partHe);
+      hard('מגבלה קשה: חסימה ביום ' + dayHe + ' ' + partHe);
     if (!partAllowed(e.allowedParts, part))
-      reasons.push('סוג משמרת: העובד/ת משובץ/ת רק ל' +
+      hard('סוג משמרת: העובד/ת משובץ/ת רק ל' +
         (e.allowedParts || []).map(function (k) { return partLabel(st, k); }).join('/'));
     if (pairsToSet(e.softUnavailable, parts).has(K(day, part)))
-      reasons.push('מגבלה רכה: העובד/ת ביקש/ה להימנע מיום ' + dayHe);
+      out.push({ level: 'soft', text: 'ביקש/ה להימנע מיום ' + dayHe + ' ' + partHe });
 
     var iso = addDaysISO(weekStart, day);
     (state.absences || []).forEach(function (a) {
@@ -349,9 +354,18 @@
       if (!(a.startDate <= iso && (a.endDate || a.startDate) >= iso)) return;
       // היעדרות לחצי-יום ספציפי לא מתנגשת עם החצי השני
       if (a.part && a.part !== 'either' && a.part !== part) return;
-      reasons.push((LEAVE_HE[a.type] || 'היעדרות') + ' בתאריך ' + (+iso.slice(8, 10)) + '.' + (+iso.slice(5, 7)));
+      hard((LEAVE_HE[a.type] || 'היעדרות') + ' בתאריך ' + (+iso.slice(8, 10)) + '.' + (+iso.slice(5, 7)));
     });
-    return reasons;
+    return out;
+  }
+
+  /** האם ברשימת הסיבות יש הפרה קשה (להבדיל מוויתור על מגבלה רכה). */
+  function hasHard(reasons) {
+    return (reasons || []).some(function (r) { return r.level === 'hard'; });
+  }
+  /** טקסט הסיבות לתצוגה. */
+  function reasonText(reasons) {
+    return (reasons || []).map(function (r) { return r.text; }).join(' · ');
   }
 
   /** [[day, partKey|null], ...] → 'שלישי (בוקר), שישי' */
@@ -372,7 +386,8 @@
     weekStartOf: weekStartOf, todayISO: todayISO, dayIndexInWeek: dayIndexInWeek,
     pairsToSet: pairsToSet, partAllowed: partAllowed, partLabel: partLabel, fullName: fullName,
     solve: solve, prepareInputs: prepareInputs, traineeFill: traineeFill, generate: generate,
-    manualAddConflicts: manualAddConflicts, fmtConstraintDays: fmtConstraintDays,
+    manualAddConflicts: manualAddConflicts, hasHard: hasHard, reasonText: reasonText,
+    fmtConstraintDays: fmtConstraintDays,
     defaultPrefFor: defaultPrefFor, absenceBlocks: absenceBlocks, traineeGroupKeys: traineeGroupKeys
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
