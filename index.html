@@ -21,14 +21,14 @@
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);
      -webkit-text-size-adjust:100%;min-height:100vh;display:flex;flex-direction:column}
-main{flex:1}
+main{flex:1;min-width:0}
 h1,h2,h3{font-family:var(--serif);font-weight:700;text-wrap:balance;margin:0}
 h1{font-size:1.55rem;line-height:1.25} h2{font-size:1.24rem} h3{font-size:1rem}
 button,input,select,textarea{font:inherit;color:inherit}
 .num{font-variant-numeric:tabular-nums}
 
 /* ── מבנה ──────────────────────────────────────────────────────────────── */
-.wrap{max-width:1180px;margin:0 auto;padding:0 1rem}
+.wrap{max-width:min(1180px,100%);margin:0 auto;padding:0 1rem}
 header{background:var(--card);border-bottom:1px solid var(--rule)}
 .head{display:flex;align-items:center;gap:.9rem;padding:.7rem 0;flex-wrap:wrap}
 .head img{height:30px;display:block}
@@ -51,7 +51,7 @@ section[hidden]{display:none}
 .card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:1rem;margin-bottom:1rem}
 .card > h3{margin-bottom:.15rem}
 .card > .sub{margin-bottom:.9rem}
-.scroll{overflow-x:auto}
+.scroll{overflow-x:auto;min-width:0}
 table{border-collapse:collapse;width:100%;font-size:.9rem}
 th,td{text-align:start;padding:.5rem .6rem;border-bottom:1px solid var(--rule);vertical-align:middle}
 thead th{background:var(--teal-soft);color:var(--teal);font-weight:700;font-size:.83rem;
@@ -80,7 +80,8 @@ input[type=number],select,textarea{
   width:100%;background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
   padding:.4rem .55rem}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:-1px;border-color:var(--teal)}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0 .9rem}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));
+  gap:0 .9rem;max-width:100%}
 
 /* ── צ'יפים ומתגים ─────────────────────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:.35rem}
@@ -148,6 +149,21 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 .pickrow .grow{flex:1;min-width:0}
 .pickrow .pd{width:.5rem;height:.5rem;border-radius:50%;flex:0 0 auto}
 
+/* ── ספירה מול יעד ── */
+.summary{display:flex;flex-wrap:wrap;gap:.35rem;margin:.2rem 0 1rem}
+.sumchip{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--rule);
+  border-radius:var(--r);padding:.2rem .55rem;font-size:.83rem;background:var(--card)}
+.sumchip .dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--dot,var(--muted))}
+.sumchip b{font-weight:700}
+.sumchip .tgt{color:var(--muted);font-size:.78rem}
+.sumchip[data-st="under"]{background:var(--bad-bg);border-color:#E3C2C2;color:var(--bad)}
+.sumchip[data-st="ok"]{background:var(--warn-bg);border-color:#E6D3A0;color:#6E4B07}
+.sumchip[data-st="full"]{background:var(--ok-bg);border-color:#BFE0CA;color:var(--ok)}
+.sumchip[data-st="extra"]{border-style:dashed}
+.scopebar{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap;margin-bottom:.7rem}
+.switch{display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--muted);
+  cursor:pointer;white-space:nowrap}
+
 /* ── באנרים ────────────────────────────────────────────────────────────── */
 .note{border:1px solid var(--rule);border-radius:var(--r);padding:.6rem .8rem;
   margin-bottom:1rem;font-size:.88rem;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
@@ -213,6 +229,7 @@ footer a{color:var(--teal)}
     <nav id="nav">
       <button data-tab="board" aria-current="true">לוח שבועי</button>
       <button data-tab="employees">עובדים</button>
+      <button data-tab="demand">דרישות ויעדים</button>
       <button data-tab="settings">הגדרות</button>
     </nav>
   </div>
@@ -229,11 +246,44 @@ footer a{color:var(--teal)}
       <button class="btn ghost sm" id="wkNext" title="שבוע הבא">←</button>
       <span class="wklabel" id="wkLabel"></span>
       <span class="grow"></span>
+      <label class="switch" title="נסה לא לשבץ את אותו עובד לשתי משמרות באותו יום">
+        <input type="checkbox" id="minDoubles" checked> מזעור כפולות</label>
+      <button class="btn" id="genBtn">יצירה אוטומטית</button>
       <button class="btn ghost" id="wkCopy">העתקת השבוע הקודם</button>
       <button class="btn ghost" id="wkLock">קביעת הלוח</button>
     </div>
     <div id="wkBanner"></div>
+    <div id="genReport"></div>
     <div class="scroll"><div class="board" id="board"></div></div>
+    <div class="summary" id="summary"></div>
+  </section>
+
+  <!-- דרישות ויעדים -->
+  <section id="tab-demand" hidden>
+    <h2>דרישות ויעדים</h2>
+    <p class="sub">על שני אלה עובד המחולל: כמה אנשים צריך בכל משמרת, וכמה משמרות כל עובד אמור לקבל.</p>
+
+    <div class="card">
+      <h3>כמה צריך בכל משמרת</h3>
+      <div class="scopebar" id="demScope">
+        <button class="chip" type="button" data-scope="global" aria-pressed="true">ברירת מחדל</button>
+        <button class="chip" type="button" data-scope="week" aria-pressed="false">רק לשבוע <span id="demWeekLabel"></span></button>
+        <button class="btn danger sm" type="button" id="demClear" hidden>הסרת החריגה</button>
+      </div>
+      <p class="sub" id="demHint"></p>
+      <div class="scroll"><table id="demTable" class="rows"></table></div>
+    </div>
+
+    <div class="card" style="padding:0">
+      <div style="padding:1rem 1rem 0">
+        <h3>יעדים אישיים</h3>
+        <p class="sub">מינימום ומקסימום משמרות בשבוע, העדפת משמרת, וכמה פעמים מותר לשבץ את אותו
+          עובד ליותר ממשמרת אחת באותו יום. <b>מינימום 0 ומקסימום 7</b> = בלי יעד.</p>
+      </div>
+      <div class="scroll"><table id="tgtTable" class="rows"><thead><tr>
+        <th>עובד</th><th>מינימום</th><th>מקסימום</th><th>העדפה</th><th>מקס׳ כפולות</th><th>הערות</th>
+      </tr></thead><tbody id="tgtBody"></tbody></table></div>
+    </div>
   </section>
 
   <!-- ══ עובדים ══════════════════════════════════════════════════════════ -->
@@ -261,7 +311,7 @@ footer a{color:var(--teal)}
     <div class="card">
       <h3>שם ופרטים</h3>
       <p class="sub">השם מופיע בכותרת ובתמונת הלוח שנשלחת לצוות.</p>
-      <label class="f" style="max-width:340px"><span>שם המרפאה</span>
+      <label class="f" style="max-width:min(340px,100%)"><span>שם המרפאה</span>
         <input type="text" id="setClinic" placeholder="למשל: מרפאה וטרינרית הרצליה"></label>
     </div>
 
@@ -287,9 +337,9 @@ footer a{color:var(--teal)}
     <div class="card">
       <h3>פותח</h3>
       <p class="sub">עובד שמגיע מוקדם לפתוח את המרפאה. מסומן בלוח ובתמונה.</p>
-      <label class="f" style="max-width:260px">
+      <label class="f" style="max-width:min(260px,100%)">
         <span>שעת פתיחה</span><input type="time" id="setOpenerStart"></label>
-      <div class="grid2" style="max-width:520px">
+      <div class="grid2" style="max-width:min(520px,100%)">
         <label class="f"><span>באיזו משמרת</span><select id="setOpenerPart"></select></label>
       </div>
       <div class="sub" style="margin:0 0 .3rem">באילו ימים</div>
@@ -586,12 +636,15 @@ function availGrid(table, opts) {
 }
 
 /* ══ טאבים ═══════════════════════════════════════════════════════════════ */
-var TABS = ['board', 'employees', 'settings'];
+var TABS = ['board', 'employees', 'demand', 'settings'];
 function showTab(name) {
   TABS.forEach(function (t) { $('tab-' + t).hidden = (t !== name); });
   Array.from($('nav').children).forEach(function (b) {
     b.setAttribute('aria-current', String(b.dataset.tab === name));
   });
+  // כל מסך נגזר מאותו state — מרעננים בכניסה כדי שעריכה בטאב אחר תיראה כאן
+  ({ board: renderBoard, employees: renderEmployees, demand: renderDemand,
+     settings: renderSettings })[name]();
 }
 $('nav').addEventListener('click', function (e) {
   var b = e.target.closest('button[data-tab]');
@@ -662,6 +715,7 @@ function renderBoard() {
     });
   });
   renderWeekBanner();
+  renderSummary();
 }
 
 function empChip(a, e, d, partKey, iso) {
@@ -729,7 +783,7 @@ function renderWeekBanner() {
     el('span', { className: 'grow', textContent: 'מגבלות השבוע: ' + lines.join(' · ') })]));
 }
 
-function gotoWeek(ws) { curWeek = ws; renderBoard(); }
+function gotoWeek(ws) { curWeek = ws; $('genReport').textContent = ''; renderBoard(); renderDemand(); }
 $('wkPrev').onclick = function () { gotoWeek(S.addDaysISO(curWeek, -7)); };
 $('wkNext').onclick = function () { gotoWeek(S.addDaysISO(curWeek, 7)); };
 $('wkDate').onchange = function () { if (this.value) gotoWeek(S.weekStartOf(this.value)); };
@@ -1024,6 +1078,219 @@ $('empDlg').addEventListener('close', function () {
   if (this.returnValue === 'save') { if (this._commit()) { save(); renderEmployees(); } }
 });
 
+/* ══ דרישות ויעדים ═══════════════════════════════════════════════════════ */
+var demandScope = 'global';   // global | week
+
+function realGroups() {
+  return state.settings.roleGroups.filter(function (g) { return !g.isTrainee; });
+}
+function demandRows() {
+  var wk = weekOf(curWeek);
+  return (demandScope === 'week' && wk.demandOverride) ? wk.demandOverride : (state.demand || []);
+}
+function demandGet(rows, d, p, g) {
+  var r = rows.find(function (x) { return x.day === d && x.part === p && x.roleGroup === g; });
+  return r ? r.count : 0;
+}
+function demandSet(d, p, g, n) {
+  var wk = weekOf(curWeek), rows;
+  if (demandScope === 'week') {
+    // התחלה מהערכים הגלובליים, כדי שה-override לא ייפתח ריק
+    if (!wk.demandOverride) wk.demandOverride = JSON.parse(JSON.stringify(state.demand || []));
+    rows = wk.demandOverride;
+  } else { rows = state.demand = state.demand || []; }
+  var i = rows.findIndex(function (x) { return x.day === d && x.part === p && x.roleGroup === g; });
+  if (n > 0) { if (i >= 0) rows[i].count = n; else rows.push({ day: d, part: p, roleGroup: g, count: n }); }
+  else if (i >= 0) rows.splice(i, 1);
+  save();
+}
+
+function renderDemand() {
+  var st = state.settings, wk = weekOf(curWeek), groups = realGroups();
+  var rows = demandRows();
+  $('demWeekLabel').textContent = weekLabel(curWeek);
+  Array.from($('demScope').children).forEach(function (b) {
+    b.setAttribute('aria-pressed', String(b.dataset.scope === demandScope));
+  });
+  $('demClear').hidden = !(demandScope === 'week' && wk.demandOverride);
+  $('demHint').textContent = demandScope === 'week'
+    ? (wk.demandOverride ? 'לשבוע הזה יש דרישות משלו. שינוי כאן לא נוגע בברירת המחדל.'
+                         : 'עוד אין חריגה לשבוע הזה — שינוי ראשון יעתיק לכאן את ברירת המחדל.')
+    : 'אלה הדרישות הרגילות של המרפאה, לכל שבוע.';
+
+  var t = $('demTable'); t.textContent = '';
+  var hr = el('tr'); hr.append(el('th', { textContent: 'יום ומשמרת' }));
+  groups.forEach(function (g) { hr.append(el('th', { textContent: g.name })); });
+  t.append(el('thead', {}, [hr]));
+  var tb = el('tbody');
+  st.activeDays.slice().sort(function (a, b) { return a - b; }).forEach(function (d) {
+    st.parts.forEach(function (p) {
+      if (dayPartsOf(d).indexOf(p.key) === -1) return;
+      var tr = el('tr');
+      tr.append(el('td', {}, [el('b', { textContent: DAY[d] }),
+        el('span', { style: 'color:var(--muted)', textContent: ' · ' + p.label })]));
+      groups.forEach(function (g) {
+        var inp = el('input', { type: 'number', min: '0', max: '20', className: 'num',
+          style: 'width:4.5rem', value: String(demandGet(rows, d, p.key, g.key)) });
+        inp.onchange = function () {
+          demandSet(d, p.key, g.key, Math.max(0, Math.min(20, +inp.value || 0)));
+          renderDemand(); renderBoard();
+        };
+        tr.append(el('td', { 'data-label': g.name }, [inp]));
+      });
+      tb.append(tr);
+    });
+  });
+  t.append(tb);
+  renderTargets();
+}
+
+$('demScope').addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-scope]');
+  if (b) { demandScope = b.dataset.scope; renderDemand(); }
+});
+$('demClear').onclick = function () {
+  ask('הסרת החריגה', 'השבוע יחזור לדרישות ברירת המחדל.', 'הסרה').then(function (yes) {
+    if (!yes) return;
+    weekOf(curWeek).demandOverride = null; save(); renderDemand(); renderBoard();
+  });
+};
+
+/* ── יעדים אישיים ──────────────────────────────────────────────────────── */
+function prefOf(e) {
+  if (!state.prefs[e.id]) state.prefs[e.id] = S.defaultPrefFor(e, state.settings);
+  return state.prefs[e.id];
+}
+
+function renderTargets() {
+  var body = $('tgtBody'); body.textContent = '';
+  var list = state.employees.filter(function (e) { return e.active !== false; })
+    .sort(function (a, b) {
+      return (groupOfEmp(a).rank || 9) - (groupOfEmp(b).rank || 9) ||
+        S.fullName(a).localeCompare(S.fullName(b), 'he');
+    });
+  if (!list.length) {
+    body.append(el('tr', {}, [el('td', { colSpan: 6, className: 'empty', textContent: 'עוד אין עובדים.' })]));
+    return;
+  }
+  list.forEach(function (e) {
+    var g = groupOfEmp(e), pr = prefOf(e), tr = el('tr');
+    var nameTd = el('td');
+    nameTd.append(el('span', { className: 'tag grp', style: '--dot:' + groupColor(g.key), textContent: g.name }),
+                  ' ', el('b', { textContent: S.fullName(e) }));
+    tr.append(nameTd);
+
+    if (g.isTrainee) {
+      tr.append(el('td', { colSpan: 4, style: 'color:var(--muted);font-size:.85rem',
+        'data-label': 'שיבוץ',
+        textContent: 'משובץ/ת בימי העבודה הקבועים בלבד, תמיד בנוסף לצוות — בלי יעד ובלי מכסה.' }));
+    } else {
+      var numCell = function (key, label, max) {
+        var inp = el('input', { type: 'number', min: '0', max: String(max), className: 'num',
+          style: 'width:4.5rem', value: String(pr[key]) });
+        inp.onchange = function () {
+          pr[key] = Math.max(0, Math.min(max, +inp.value || 0));
+          if (key === 'targetMin' && pr.targetMin > pr.targetMax) pr.targetMax = pr.targetMin;
+          if (key === 'targetMax' && pr.targetMax < pr.targetMin) pr.targetMin = pr.targetMax;
+          save(); renderTargets(); renderSummary();
+        };
+        return el('td', { 'data-label': label }, [inp]);
+      };
+      tr.append(numCell('targetMin', 'מינימום', 21), numCell('targetMax', 'מקסימום', 21));
+
+      var sel = el('select', { style: 'width:auto' });
+      sel.append(el('option', { value: 'any', textContent: 'ללא העדפה', selected: pr.prefer === 'any' }));
+      state.settings.parts.forEach(function (p) {
+        sel.append(el('option', { value: p.key, textContent: p.label, selected: pr.prefer === p.key }));
+      });
+      sel.onchange = function () { pr.prefer = sel.value; save(); };
+      tr.append(el('td', { 'data-label': 'העדפה' }, [sel]));
+
+      tr.append(numCell('maxDoubles', 'מקס׳ כפולות', 7));
+    }
+
+    var note = el('input', { type: 'text', value: pr.notes || '', placeholder: 'הערה חופשית' });
+    note.oninput = function () { pr.notes = note.value; save(); };
+    tr.append(el('td', { 'data-label': 'הערות' }, [note]));
+    body.append(tr);
+  });
+}
+
+/* ══ המחולל ══════════════════════════════════════════════════════════════ */
+function generateWeek() {
+  var wk = weekOf(curWeek);
+  if (wk.locked) return banner('bad', 'הלוח קבוע. פתחו אותו לעריכה כדי ליצור מחדש.');
+  var manual = wk.assignments.filter(function (a) { return a.isManual; }).length;
+  var run = function () {
+    var r = S.generate(state, curWeek);
+    wk.assignments = r.assignments.map(function (a) {
+      return { day: a.day, part: a.part, employeeId: a.employeeId, isManual: false,
+               isOpener: false, note: '', customStart: null, customEnd: null };
+    });
+    save(); renderBoard(); reportGenerate(r);
+  };
+  if (!manual) return run();
+  ask('יצירה מחדש', 'בשבוע הזה יש ' + manual + ' שיבוצים ידניים. יצירה מחדש תמחק אותם.', 'יצירה')
+    .then(function (yes) { if (yes) run(); });
+}
+
+function reportGenerate(r) {
+  var box = $('genReport'); box.textContent = '';
+  var lines = ['נוצרו ' + r.assignments.length + ' שיבוצים'];
+  if (r.traineeAdded) lines.push(r.traineeAdded + ' שיבוצי חפיפות נוספו');
+  if (r.blockedCount) lines.push(r.blockedCount + ' חסימות מהיעדרויות הוחלו');
+  box.append(el('div', { className: 'note info' }, [
+    el('span', { className: 'grow', textContent: lines.join(' · ') })]));
+
+  if (r.unfilled.length) {
+    var miss = r.unfilled.map(function (u) {
+      var g = groupOf(u.roleGroup);
+      return DAY[u.day] + ' ' + partLabel(u.part) + ' — ' + u.missing + ' ' + (g ? g.name : u.roleGroup);
+    });
+    var total = r.unfilled.reduce(function (s, u) { return s + u.missing; }, 0);
+    box.append(el('div', { className: 'note bad' }, [
+      el('span', { className: 'grow', textContent: total + ' משמרות לא אוישו: ' + miss.join(' · ') })]));
+  }
+}
+
+/* ── ספירה מול יעד ─────────────────────────────────────────────────────── */
+function renderSummary() {
+  var box = $('summary'); box.textContent = '';
+  var wk = weekOf(curWeek);
+  var counts = {};
+  wk.assignments.forEach(function (a) { counts[a.employeeId] = (counts[a.employeeId] || 0) + 1; });
+
+  var list = state.employees.filter(function (e) { return e.active !== false; })
+    .sort(function (a, b) {
+      return (groupOfEmp(a).rank || 9) - (groupOfEmp(b).rank || 9) ||
+        S.fullName(a).localeCompare(S.fullName(b), 'he');
+    });
+  if (!list.length) return;
+
+  list.forEach(function (e) {
+    var g = groupOfEmp(e), pr = prefOf(e), n = counts[e.id] || 0;
+    var chip = el('span', { className: 'sumchip' });
+    chip.append(el('span', { className: 'dot', style: '--dot:' + groupColor(g.key) }),
+                el('span', { textContent: S.fullName(e) }));
+    if (g.isTrainee) {
+      chip.dataset.st = 'extra';
+      chip.append(el('b', { className: 'num', textContent: String(n) }),
+                  el('span', { className: 'tgt', textContent: 'בנוסף' }));
+    } else {
+      var hasTarget = !(pr.targetMin === 0 && pr.targetMax >= 7);
+      chip.dataset.st = !hasTarget ? 'none' : n < pr.targetMin ? 'under' : n >= pr.targetMax ? 'full' : 'ok';
+      chip.title = hasTarget ? 'יעד ' + pr.targetMin + '–' + pr.targetMax + ' משמרות' : 'לא הוגדר יעד';
+      chip.append(el('b', { className: 'num', textContent: String(n) }));
+      if (hasTarget) chip.append(el('span', { className: 'tgt num',
+        textContent: '/ ' + pr.targetMin + '–' + pr.targetMax }));
+    }
+    box.append(chip);
+  });
+}
+
+$('genBtn').onclick = generateWeek;
+$('minDoubles').onchange = function () { state.settings.minDoubles = this.checked; save(); };
+
 /* ══ אישור ═══════════════════════════════════════════════════════════════ */
 function ask(title, bodyText, okLabel) {
   return new Promise(function (resolve) {
@@ -1062,7 +1329,7 @@ function renderSettings() {
   // משמרות
   var wrap = $('setParts'); wrap.textContent = '';
   st.parts.forEach(function (p, i) {
-    var row = el('div', { className: 'grid2', style: 'align-items:end;max-width:640px' });
+    var row = el('div', { className: 'grid2', style: 'align-items:end;max-width:min(640px,100%)' });
     var lab = el('input', { type: 'text', value: p.label });
     lab.oninput = function () { p.label = lab.value; save(); };
     var s = el('input', { type: 'time', value: p.start });
@@ -1276,7 +1543,11 @@ window.addEventListener('storage', function (ev) {
 });
 
 /* ══ הפעלה ═══════════════════════════════════════════════════════════════ */
-function renderAll() { renderSettings(); renderEmployees(); renderBoard(); }
+function renderAll() {
+  // המתג משקף state, ולכן נקבע ברינדור — state נטען אחרי הגדרת הפונקציות
+  $('minDoubles').checked = state.settings.minDoubles !== false;
+  renderSettings(); renderEmployees(); renderBoard(); renderDemand();
+}
 state = load();
 renderAll();
 backupNag();
