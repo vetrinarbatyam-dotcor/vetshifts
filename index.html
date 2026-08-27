@@ -111,8 +111,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 
 /* ── לוח שבועי ── */
 .board{display:grid;gap:.4rem;grid-auto-flow:column;align-items:stretch;margin-bottom:1rem}
-.board .lbl{color:var(--muted);font-size:.82rem;display:flex;align-items:center;
-  padding-inline-end:.4rem;white-space:nowrap}
+.board .lbl{color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;
+  justify-content:center;padding-inline-end:.4rem;line-height:1.25}
+.board .lbl .hrs{font-size:.74rem}
 .board .bhead{background:var(--teal-soft);color:var(--teal);border:1px solid #BFE0DA;
   border-radius:var(--r);padding:.3rem .55rem;font-weight:700;font-size:.85rem;
   display:flex;gap:.4rem;align-items:baseline}
@@ -163,6 +164,27 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 .scopebar{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap;margin-bottom:.7rem}
 .switch{display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--muted);
   cursor:pointer;white-space:nowrap}
+
+/* ── הערות יום, מומחים, פותח ── */
+.daynote{border:1px solid #E6D3A0;background:var(--warn-bg);color:#6E4B07;border-radius:var(--r);
+  padding:.2rem .4rem;font-size:.76rem;cursor:pointer;text-align:start;width:100%;
+  display:block;line-height:1.3;max-height:3.4em;overflow:hidden}
+.daynote:hover{border-color:var(--warn)}
+.specrow{display:flex;flex-wrap:wrap;gap:.2rem}
+.spec{font-size:.7rem;border-radius:3px;padding:0 .35rem;color:#fff;white-space:nowrap}
+.notebtn{background:none;border:1px dashed var(--rule);border-radius:var(--r);color:var(--muted);
+  cursor:pointer;font-size:.75rem;padding:.15rem}
+.notebtn:hover{border-color:var(--warn);color:var(--warn)}
+.cellfoot{display:flex;gap:.25rem;margin-top:auto}
+.cellfoot .addbtn{flex:1;margin-top:0}
+.board.locked .cellfoot{display:none}
+.emp .oc{font-size:.68rem;color:var(--warn);border:1px solid #E6D3A0;background:var(--warn-bg);
+  border-radius:3px;padding:0 .25rem;flex:0 0 auto}
+.swatch{width:1.3rem;height:1.3rem;border-radius:50%;border:2px solid transparent;
+  outline:1px solid var(--rule);cursor:pointer;padding:0}
+.swatch[aria-pressed="true"]{border-color:var(--card);outline:2px solid var(--ink)}
+.chip[style*="--dot"]::before{content:"";display:inline-block;width:.5rem;height:.5rem;
+  border-radius:50%;background:var(--dot);margin-inline-end:.35rem;vertical-align:-.05rem}
 
 /* ── באנרים ────────────────────────────────────────────────────────────── */
 .note{border:1px solid var(--rule);border-radius:var(--r);padding:.6rem .8rem;
@@ -301,6 +323,19 @@ footer a{color:var(--teal)}
         <th>מגבלות</th><th>ימים מועדפים</th><th></th>
       </tr></thead><tbody id="empBody"></tbody></table></div>
     </div>
+
+    <div class="bar" style="margin-top:1.6rem">
+      <h2>היעדרויות</h2>
+      <span class="grow"></span>
+      <button class="btn" id="addAbs">הוספת היעדרות</button>
+    </div>
+    <p class="sub">חופשה, מחלה, יום אישי או בקשה לא לשבץ. מה שנרשם כאן חוסם את המחולל,
+      ומופיע כמגבלת השבוע מעל הלוח.</p>
+    <div class="card" style="padding:0">
+      <div class="scroll"><table id="absTable" class="rows"><thead><tr>
+        <th>עובד</th><th>סוג</th><th>תאריכים</th><th>משמרת</th><th></th>
+      </tr></thead><tbody id="absBody"></tbody></table></div>
+    </div>
   </section>
 
   <!-- ══ הגדרות ══════════════════════════════════════════════════════════ -->
@@ -353,6 +388,15 @@ footer a{color:var(--teal)}
       <div class="scroll"><table><thead><tr><th>שם הקבוצה</th><th>סוג</th><th>עובדים</th><th></th></tr></thead>
         <tbody id="setGroups"></tbody></table></div>
       <button class="btn ghost sm" id="addGroup" style="margin-top:.6rem">הוספת קבוצה</button>
+    </div>
+
+    <div class="card">
+      <h3>תחומים מיוחדים</h3>
+      <p class="sub">תחומים שמסמנים משמרת שלמה — כירורגיה, אולטרסאונד, קרדיולוג מבקר.
+        מופיעים כתגית צבעונית על המשמרת בלוח.</p>
+      <div class="scroll"><table id="specTable" class="rows"><thead><tr>
+        <th>שם התחום</th><th>צבע</th><th></th></tr></thead><tbody id="specBody"></tbody></table></div>
+      <button class="btn ghost sm" id="addSpec" style="margin-top:.6rem">הוספת תחום</button>
     </div>
 
     <div class="card">
@@ -444,12 +488,68 @@ footer a{color:var(--teal)}
   </form>
 </dialog>
 
-<!-- מגבלות העובד -->
-<dialog id="infoDlg">
+<!-- היעדרות -->
+<dialog id="absDlg">
   <form method="dialog">
-    <div class="dh"><h3 id="infoTitle"></h3></div>
-    <div class="db" id="infoBody"></div>
-    <div class="da"><button class="btn ghost" value="cancel">סגירה</button></div>
+    <div class="dh"><h3 id="absDlgTitle"></h3></div>
+    <div class="db">
+      <div class="grid2">
+        <label class="f"><span>עובד *</span><select id="absEmp" required></select></label>
+        <label class="f"><span>סוג</span><select id="absType"></select></label>
+        <label class="f"><span>מתאריך *</span><input type="date" id="absStart" required></label>
+        <label class="f"><span>עד תאריך</span><input type="date" id="absEnd"></label>
+        <label class="f"><span>היקף</span><select id="absPart"></select></label>
+      </div>
+      <label class="f"><span>הערה</span><input type="text" id="absNote" placeholder="לא חובה"></label>
+    </div>
+    <div class="da">
+      <button class="btn" value="save" type="submit">שמירה</button>
+      <button class="btn ghost" value="cancel" formnovalidate>ביטול</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- הערת יום -->
+<dialog id="dnDlg">
+  <form method="dialog">
+    <div class="dh"><h3 id="dnTitle"></h3></div>
+    <div class="db">
+      <label class="f"><span>הערה למשמרת</span>
+        <textarea id="dnNote" rows="3" placeholder="למשל: יום ניתוחים · המרפאה סוגרת מוקדם"></textarea></label>
+      <div class="sub" style="margin:.2rem 0 .4rem">תחומים מיוחדים</div>
+      <div class="chips" id="dnSpecs"></div>
+    </div>
+    <div class="da">
+      <button class="btn" value="save" type="submit">שמירה</button>
+      <button class="btn ghost" value="cancel">ביטול</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- שיבוץ בודד -->
+<dialog id="asgDlg">
+  <form method="dialog">
+    <div class="dh"><h3 id="asgTitle"></h3></div>
+    <div class="db">
+      <div id="asgInfo"></div>
+      <div id="asgOpenerWrap" style="margin-top:.9rem">
+        <label class="switch" style="color:var(--ink)">
+          <input type="checkbox" id="asgOpener"> <span id="asgOpenerLabel"></span></label>
+      </div>
+      <h3 style="margin-top:.9rem">שעות מותאמות</h3>
+      <p class="sub" id="asgHoursHint" style="margin-bottom:.4rem"></p>
+      <div class="grid2" style="max-width:min(360px,100%)">
+        <label class="f"><span>משעה</span><input type="time" id="asgStart"></label>
+        <label class="f"><span>עד שעה</span><input type="time" id="asgEnd"></label>
+      </div>
+      <label class="f"><span>הערה לשיבוץ הזה</span><input type="text" id="asgNote" placeholder="למשל: מגיעה ב-12"></label>
+    </div>
+    <div class="da">
+      <button class="btn" value="save" type="submit">שמירה</button>
+      <button class="btn ghost" value="cancel" formnovalidate>ביטול</button>
+      <span class="grow"></span>
+      <button class="btn danger" id="asgRemove" type="button">הסרה מהמשמרת</button>
+    </div>
   </form>
 </dialog>
 
@@ -643,8 +743,10 @@ function showTab(name) {
     b.setAttribute('aria-current', String(b.dataset.tab === name));
   });
   // כל מסך נגזר מאותו state — מרעננים בכניסה כדי שעריכה בטאב אחר תיראה כאן
-  ({ board: renderBoard, employees: renderEmployees, demand: renderDemand,
-     settings: renderSettings })[name]();
+  ({ board: renderBoard,
+     employees: function () { renderEmployees(); renderAbsences(); },
+     demand: renderDemand,
+     settings: function () { renderSettings(); renderSpecialists(); } })[name]();
 }
 $('nav').addEventListener('click', function (e) {
   var b = e.target.closest('button[data-tab]');
@@ -670,14 +772,16 @@ function renderBoard() {
   board.classList.toggle('locked', !!wk.locked);
   // סדר ה-DOM הוא יום-ראשי; במובייל אותו DOM נקרא כרשימת ימים.
   board.style.gridTemplateRows = 'auto repeat(' + parts.length + ',minmax(0,1fr))';
-  board.style.gridTemplateColumns = 'auto repeat(' + days.length + ',minmax(10.5rem,1fr))';
+  board.style.gridTemplateColumns = 'auto repeat(' + days.length + ',minmax(8rem,1fr))';
 
   $('wkDate').value = curWeek;
   $('wkLabel').textContent = weekLabel(curWeek);
 
   board.append(el('div', { className: 'lbl' }));
   parts.forEach(function (p) {
-    board.append(el('div', { className: 'lbl', textContent: p.label + ' ' + p.start + '–' + p.end }));
+    board.append(el('div', { className: 'lbl' }, [
+      el('span', { textContent: p.label }),
+      el('span', { className: 'hrs num', textContent: p.start + '–' + p.end })]));
   });
 
   days.forEach(function (d) {
@@ -699,18 +803,39 @@ function renderBoard() {
       cell.append(el('div', { className: 'cellpart', textContent: p.label + ' · ' + p.start + '–' + p.end }));
       if (!isOpen) { cell.append(el('span', { textContent: 'סגור' })); board.append(cell); return; }
 
+      var dn = (wk.dayNotes || {})[d + ':' + p.key];
+      if (dn && (dn.specialistIds || []).length) {
+        var sr = el('div', { className: 'specrow' });
+        dn.specialistIds.forEach(function (sid) {
+          var sp = specById(sid);
+          if (sp) sr.append(el('span', { className: 'spec', style: 'background:' + sp.color, textContent: sp.name }));
+        });
+        cell.append(sr);
+      }
+      if (dn && dn.note) {
+        var nb = el('button', { type: 'button', className: 'daynote', textContent: dn.note, title: dn.note });
+        nb.onclick = function () { openDayNote(d, p.key); };
+        cell.append(nb);
+      }
+
       wk.assignments.filter(function (a) { return a.day === d && a.part === p.key; })
         .map(function (a) { return { a: a, e: empById(a.employeeId) }; })
         .sort(function (x, y) {
           if (!x.e || !y.e) return x.e ? -1 : 1;
+          if (!!x.a.isOpener !== !!y.a.isOpener) return x.a.isOpener ? -1 : 1;
           var rx = (groupOfEmp(x.e).rank || 9), ry = (groupOfEmp(y.e).rank || 9);
           return rx - ry || S.fullName(x.e).localeCompare(S.fullName(y.e), 'he');
         })
         .forEach(function (r) { cell.append(empChip(r.a, r.e, d, p.key, iso)); });
 
+      var foot = el('div', { className: 'cellfoot' });
       var add = el('button', { type: 'button', className: 'addbtn', textContent: '+ הוספה' });
       add.onclick = function () { openPicker(d, p.key); };
-      cell.append(add);
+      var nbtn = el('button', { type: 'button', className: 'notebtn',
+        title: 'הערה ותחומים למשמרת', textContent: dn ? 'הערה ✓' : 'הערה' });
+      nbtn.onclick = function () { openDayNote(d, p.key); };
+      foot.append(add, nbtn);
+      cell.append(foot);
       board.append(cell);
     });
   });
@@ -729,12 +854,17 @@ function empChip(a, e, d, partKey, iso) {
     var g = groupOfEmp(e);
     chip.append(el('span', { className: 'dot', style: '--dot:' + groupColor(g.key), title: g.name }));
     var nm = el('button', { type: 'button', className: 'nm', textContent: S.fullName(e),
-                            title: 'הצגת המגבלות של ' + S.fullName(e) });
-    nm.onclick = function () { openInfo(e); };
+                            title: 'מגבלות, הערה, שעות ופותח' });
+    nm.onclick = function () { openAssign(a, e, d, partKey); };
     chip.append(nm);
     if (e.active === false) chip.append(el('span', { className: 'bdg', textContent: 'בארכיון' }));
     if (isBirthday(e, iso)) chip.append(el('span', { className: 'bdg', textContent: 'יום הולדת' }));
     if (a.isManual) chip.append(el('span', { className: 'bdg', title: 'שובץ ידנית', textContent: 'ידני' }));
+    if (a.isOpener) chip.append(el('span', { className: 'oc',
+      title: 'פותח/ת את המרפאה', textContent: state.settings.opener.start }));
+    if (a.customStart || a.customEnd) chip.append(el('span', { className: 'bdg num',
+      title: 'שעות מותאמות', textContent: (a.customStart || '') + '–' + (a.customEnd || '') }));
+    if (a.note) chip.append(el('span', { className: 'bdg', title: a.note, textContent: 'הערה' }));
     var why = S.manualAddConflicts(state, curWeek, d, partKey, e.id);
     if (why.length) {
       chip.classList.add('warn');
@@ -870,36 +1000,6 @@ function renderPickList() {
     };
     box.append(row);
   });
-}
-
-/* ── מגבלות העובד ──────────────────────────────────────────────────────── */
-function openInfo(e) {
-  var g = groupOfEmp(e), pr = state.prefs[e.id] || S.defaultPrefFor(e, state.settings);
-  $('infoTitle').textContent = S.fullName(e);
-  var b = $('infoBody'); b.textContent = '';
-  var line = function (k, v) {
-    if (!v) return;
-    b.append(el('div', { style: 'display:flex;gap:.7rem;padding:.3rem 0;border-bottom:1px solid var(--rule)' }, [
-      el('span', { style: 'flex:0 0 8.5rem;color:var(--muted);font-size:.85rem', textContent: k }),
-      el('span', { className: 'grow', textContent: v })]));
-  };
-  line('קבוצה', g.name);
-  line('משמרות מותרות', (e.allowedParts || []).length ? e.allowedParts.map(partLabel).join(', ') : 'כל המשמרות');
-  line('חסום', S.fmtConstraintDays(e.hardUnavailable, state.settings));
-  line('עדיף שלא', S.fmtConstraintDays(e.softUnavailable, state.settings));
-  if (g.isTrainee) line('ימי עבודה קבועים', S.fmtConstraintDays(state.traineeSlots[e.id] || [], state.settings));
-  else line('ימים מועדפים', (e.preferredDays || []).map(function (d) { return DAY[d]; }).join(', '));
-  line('יעד שבועי', pr.targetMin + '–' + pr.targetMax + ' משמרות');
-  line('העדפה', pr.prefer === 'any' ? 'ללא' : partLabel(pr.prefer));
-  line('היעדרויות השבוע', (state.absences || []).filter(function (a) {
-    return a.employeeId === e.id && (a.endDate || a.startDate) >= curWeek && a.startDate <= S.addDaysISO(curWeek, 6);
-  }).map(function (a) {
-    return fmtDate(a.startDate) + (a.endDate && a.endDate !== a.startDate ? '–' + fmtDate(a.endDate) : '') +
-      (a.part && a.part !== 'either' ? ' (' + partLabel(a.part) + ')' : '');
-  }).join(' · '));
-  line('משובץ השבוע', weekOf(curWeek).assignments.filter(function (a) {
-    return a.employeeId === e.id; }).length + ' משמרות');
-  $('infoDlg').showModal();
 }
 
 /* ══ עובדים ══════════════════════════════════════════════════════════════ */
@@ -1291,6 +1391,233 @@ function renderSummary() {
 $('genBtn').onclick = generateWeek;
 $('minDoubles').onchange = function () { state.settings.minDoubles = this.checked; save(); };
 
+/* ══ היעדרויות ═══════════════════════════════════════════════════════════ */
+var ABS_TYPES = [['vacation', 'חופשה'], ['sick', 'מחלה'], ['personal', 'יום אישי'],
+                 ['shift_assignment', 'בקשת אי-שיבוץ']];
+function absTypeHe(t) {
+  var r = ABS_TYPES.find(function (x) { return x[0] === t; });
+  return r ? r[1] : 'היעדרות';
+}
+
+function renderAbsences() {
+  var body = $('absBody'); body.textContent = '';
+  var list = (state.absences || []).slice().sort(function (a, b) {
+    return b.startDate.localeCompare(a.startDate);
+  });
+  if (!list.length) {
+    body.append(el('tr', {}, [el('td', { colSpan: 5, className: 'empty',
+      textContent: 'אין היעדרויות רשומות. מה שנרשם כאן חוסם את המחולל.' })]));
+    return;
+  }
+  list.forEach(function (ab) {
+    var e = empById(ab.employeeId), tr = el('tr');
+    var past = (ab.endDate || ab.startDate) < S.todayISO();
+    if (past) tr.className = 'off';
+    tr.append(el('td', {}, [el('b', { textContent: e ? S.fullName(e) : 'עובד שנמחק (#' + ab.employeeId + ')' })]));
+    tr.append(el('td', { 'data-label': 'סוג' }, [el('span', { className: 'tag', textContent: absTypeHe(ab.type) })]));
+    tr.append(el('td', { className: 'num', 'data-label': 'תאריכים',
+      textContent: fmtDate(ab.startDate) + (ab.endDate && ab.endDate !== ab.startDate ? ' – ' + fmtDate(ab.endDate) : '') }));
+    tr.append(el('td', { 'data-label': 'משמרת',
+      textContent: (!ab.part || ab.part === 'either') ? 'יום שלם' : partLabel(ab.part) }));
+    var act = el('td', { className: 'acts' });
+    var ed = el('button', { className: 'btn ghost sm', textContent: 'עריכה' });
+    ed.onclick = function () { openAbsence(ab.id); };
+    var del = el('button', { className: 'btn danger sm', textContent: 'מחיקה', style: 'margin-inline-start:.3rem' });
+    del.onclick = function () {
+      state.absences.splice(state.absences.indexOf(ab), 1);
+      save(); renderAbsences(); renderBoard();
+    };
+    act.append(ed, del); tr.append(act);
+    body.append(tr);
+  });
+}
+
+function openAbsence(id) {
+  var ab = id == null
+    ? { id: null, employeeId: null, type: 'vacation', startDate: S.todayISO(), endDate: S.todayISO(), part: 'either', note: '' }
+    : Object.assign({}, state.absences.find(function (x) { return x.id === id; }));
+  $('absDlgTitle').textContent = id == null ? 'היעדרות חדשה' : 'עריכת היעדרות';
+
+  var sel = $('absEmp'); sel.textContent = '';
+  sel.append(el('option', { value: '', textContent: '— בחרו עובד —', selected: ab.employeeId == null }));
+  state.employees.filter(function (e) { return e.active !== false; }).forEach(function (e) {
+    sel.append(el('option', { value: String(e.id), textContent: S.fullName(e), selected: e.id === ab.employeeId }));
+  });
+  var ts = $('absType'); ts.textContent = '';
+  ABS_TYPES.forEach(function (t) {
+    ts.append(el('option', { value: t[0], textContent: t[1], selected: t[0] === ab.type }));
+  });
+  var ps = $('absPart'); ps.textContent = '';
+  ps.append(el('option', { value: 'either', textContent: 'יום שלם', selected: !ab.part || ab.part === 'either' }));
+  state.settings.parts.forEach(function (p) {
+    ps.append(el('option', { value: p.key, textContent: p.label + ' בלבד', selected: ab.part === p.key }));
+  });
+  $('absStart').value = ab.startDate; $('absEnd').value = ab.endDate || ab.startDate;
+  $('absNote').value = ab.note || '';
+
+  $('absDlg')._commit = function () {
+    if (!sel.value) return false;
+    ab.employeeId = +sel.value; ab.type = ts.value; ab.part = ps.value;
+    ab.startDate = $('absStart').value; ab.endDate = $('absEnd').value || $('absStart').value;
+    if (!ab.startDate) return false;
+    if (ab.endDate < ab.startDate) { var t = ab.startDate; ab.startDate = ab.endDate; ab.endDate = t; }
+    ab.note = $('absNote').value.trim();
+    if (ab.id == null) { ab.id = nextId(); state.absences.push(ab); }
+    else state.absences[state.absences.findIndex(function (x) { return x.id === ab.id; })] = ab;
+    return true;
+  };
+  $('absDlg').showModal();
+}
+$('addAbs').onclick = function () { openAbsence(null); };
+$('absDlg').addEventListener('close', function () {
+  if (this.returnValue === 'save' && this._commit()) { save(); renderAbsences(); renderBoard(); }
+});
+
+/* ══ מומחים ══════════════════════════════════════════════════════════════ */
+var SPEC_COLORS = ['#0F6E63', '#B0754A', '#4A6FA5', '#7A5B8F', '#A63434', '#5F6E6C'];
+
+function specById(id) { return (state.specialists || []).find(function (s2) { return s2.id === id; }); }
+
+function renderSpecialists() {
+  var body = $('specBody'); body.textContent = '';
+  if (!state.specialists.length) {
+    body.append(el('tr', {}, [el('td', { colSpan: 3, className: 'empty',
+      textContent: 'אין תחומים מוגדרים. למשל: כירורגיה, אולטרסאונד, קרדיולוג.' })]));
+    return;
+  }
+  state.specialists.forEach(function (sp, i) {
+    var tr = el('tr');
+    var nm = el('input', { type: 'text', value: sp.name });
+    nm.oninput = function () { sp.name = nm.value; save(); };
+    tr.append(el('td', {}, [nm]));
+    var sw = el('div', { className: 'chips', 'data-label': 'צבע' });
+    SPEC_COLORS.forEach(function (c) {
+      var b = el('button', { type: 'button', className: 'swatch', style: 'background:' + c, title: c });
+      b.setAttribute('aria-pressed', String(sp.color === c));
+      b.onclick = function () { sp.color = c; save(); renderSpecialists(); renderBoard(); };
+      sw.append(b);
+    });
+    tr.append(el('td', { 'data-label': 'צבע' }, [sw]));
+    var act = el('td', { className: 'acts' });
+    var del = el('button', { className: 'btn danger sm', textContent: 'הסרה' });
+    del.onclick = function () {
+      state.specialists.splice(i, 1);
+      Object.keys(state.weeks).forEach(function (w) {
+        var dn = state.weeks[w].dayNotes || {};
+        Object.keys(dn).forEach(function (k) {
+          dn[k].specialistIds = (dn[k].specialistIds || []).filter(function (x) { return x !== sp.id; });
+        });
+      });
+      save(); renderSpecialists(); renderBoard();
+    };
+    act.append(del); tr.append(act);
+    body.append(tr);
+  });
+}
+$('addSpec').onclick = function () {
+  state.specialists.push({ id: nextId(), name: 'תחום חדש',
+    color: SPEC_COLORS[state.specialists.length % SPEC_COLORS.length] });
+  save(); renderSpecialists();
+};
+
+/* ══ הערת יום ════════════════════════════════════════════════════════════ */
+var noteCtx = null;
+function openDayNote(day, partKey) {
+  noteCtx = { day: day, part: partKey };
+  var wk = weekOf(curWeek), k = day + ':' + partKey;
+  var dn = (wk.dayNotes || {})[k] || { note: '', specialistIds: [] };
+  $('dnTitle').textContent = DAY[day] + ' · ' + partLabel(partKey);
+  $('dnNote').value = dn.note || '';
+  var box = $('dnSpecs'); box.textContent = '';
+  var chosen = (dn.specialistIds || []).slice();
+  if (!state.specialists.length) {
+    box.append(el('p', { className: 'sub', style: 'margin:0',
+      textContent: 'אפשר להגדיר תחומים (כירורגיה, אולטרסאונד…) במסך ההגדרות.' }));
+  }
+  state.specialists.forEach(function (sp) {
+    var on = chosen.indexOf(sp.id) !== -1;
+    var c = el('button', { type: 'button', className: 'chip', textContent: sp.name,
+      style: '--dot:' + sp.color });
+    c.setAttribute('aria-pressed', String(on));
+    c.onclick = function () {
+      on = !on; c.setAttribute('aria-pressed', String(on));
+      var i = chosen.indexOf(sp.id);
+      if (on && i < 0) chosen.push(sp.id); else if (!on && i >= 0) chosen.splice(i, 1);
+    };
+    box.append(c);
+  });
+  $('dnDlg')._commit = function () {
+    var wk2 = weekOf(curWeek);
+    wk2.dayNotes = wk2.dayNotes || {};
+    var note = $('dnNote').value.trim();
+    if (!note && !chosen.length) delete wk2.dayNotes[k];
+    else wk2.dayNotes[k] = { note: note, specialistIds: chosen };
+    return true;
+  };
+  $('dnDlg').showModal();
+}
+$('dnDlg').addEventListener('close', function () {
+  if (this.returnValue === 'save') { this._commit(); save(); renderBoard(); }
+});
+
+/* ══ שיבוץ בודד — מגבלות + הערה + שעות + פותח ════════════════════════════ */
+function openAssign(a, e, d, partKey) {
+  var g = groupOfEmp(e), pr = state.prefs[e.id] || S.defaultPrefFor(e, state.settings);
+  var st = state.settings;
+  $('asgTitle').textContent = S.fullName(e) + ' · ' + DAY[d] + ' ' + partLabel(partKey);
+
+  // מגבלות — קריאה בלבד
+  var box = $('asgInfo'); box.textContent = '';
+  var line = function (k, v) {
+    if (!v) return;
+    box.append(el('div', { style: 'display:flex;gap:.7rem;padding:.28rem 0;border-bottom:1px solid var(--rule)' }, [
+      el('span', { style: 'flex:0 0 8.5rem;color:var(--muted);font-size:.85rem', textContent: k }),
+      el('span', { className: 'grow', textContent: v })]));
+  };
+  line('קבוצה', g.name);
+  line('משמרות מותרות', (e.allowedParts || []).length ? e.allowedParts.map(partLabel).join(', ') : 'כל המשמרות');
+  line('חסום', S.fmtConstraintDays(e.hardUnavailable, st));
+  line('עדיף שלא', S.fmtConstraintDays(e.softUnavailable, st));
+  if (g.isTrainee) line('ימי עבודה קבועים', S.fmtConstraintDays(state.traineeSlots[e.id] || [], st));
+  else line('ימים מועדפים', (e.preferredDays || []).map(function (x) { return DAY[x]; }).join(', '));
+  line('יעד שבועי', g.isTrainee ? 'ללא — תמיד בנוסף' : pr.targetMin + '–' + pr.targetMax + ' משמרות');
+  line('משובץ השבוע', weekOf(curWeek).assignments.filter(function (x) {
+    return x.employeeId === e.id; }).length + ' משמרות');
+  var why = S.manualAddConflicts(state, curWeek, d, partKey, e.id);
+  if (why.length) box.append(el('div', { className: 'note warn', style: 'margin:.6rem 0 0' }, [
+    el('span', { className: 'grow', textContent: why.join(' · ') })]));
+
+  // פותח — רק אם ההגדרות מאפשרות את זה ביום ובמשמרת האלה
+  var canOpen = st.opener && st.opener.part === partKey && (st.opener.days || []).indexOf(d) !== -1;
+  $('asgOpenerWrap').hidden = !canOpen;
+  $('asgOpenerLabel').textContent = 'פותח/ת את המרפאה ב־' + (st.opener ? st.opener.start : '');
+  $('asgOpener').checked = !!a.isOpener;
+
+  var p = st.parts.find(function (x) { return x.key === partKey; }) || {};
+  $('asgStart').value = a.customStart || '';
+  $('asgEnd').value = a.customEnd || '';
+  $('asgStart').placeholder = p.start || ''; $('asgEnd').placeholder = p.end || '';
+  $('asgHoursHint').textContent = 'ברירת המחדל: ' + (p.start || '') + '–' + (p.end || '') + '. ריק = ברירת המחדל.';
+  $('asgNote').value = a.note || '';
+
+  $('asgDlg')._commit = function () {
+    a.isOpener = canOpen && $('asgOpener').checked;
+    a.customStart = $('asgStart').value || null;
+    a.customEnd = $('asgEnd').value || null;
+    a.note = $('asgNote').value.trim();
+  };
+  $('asgDlg')._remove = function () {
+    var wk = weekOf(curWeek);
+    wk.assignments.splice(wk.assignments.indexOf(a), 1);
+  };
+  $('asgDlg').showModal();
+}
+$('asgRemove').onclick = function () { $('asgDlg')._remove(); $('asgDlg').close('removed'); };
+$('asgDlg').addEventListener('close', function () {
+  if (this.returnValue === 'save') this._commit();
+  if (this.returnValue === 'save' || this.returnValue === 'removed') { save(); renderBoard(); }
+});
+
 /* ══ אישור ═══════════════════════════════════════════════════════════════ */
 function ask(title, bodyText, okLabel) {
   return new Promise(function (resolve) {
@@ -1546,7 +1873,8 @@ window.addEventListener('storage', function (ev) {
 function renderAll() {
   // המתג משקף state, ולכן נקבע ברינדור — state נטען אחרי הגדרת הפונקציות
   $('minDoubles').checked = state.settings.minDoubles !== false;
-  renderSettings(); renderEmployees(); renderBoard(); renderDemand();
+  renderSettings(); renderSpecialists(); renderEmployees(); renderAbsences();
+  renderBoard(); renderDemand();
 }
 state = load();
 renderAll();
