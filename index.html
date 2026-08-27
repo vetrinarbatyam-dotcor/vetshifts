@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>VetShifts — לוח משמרות למרפאה וטרינרית</title>
+<link rel="icon" href="claudevet-mark.svg">
+<style>
+/* ── טוקנים — ClaudeVet, כיוון "קליני מדויק" ─────────────────────────────── */
+:root{
+  --teal:#0F6E63; --teal-soft:#DCEFEB; --bg:#F6F7F4; --card:#fff;
+  --ink:#1E2A2C; --copper:#B0754A; --muted:#5F6E6C; --rule:#D5DCD9;
+  --ok:#1E7B45; --ok-bg:#DDF2E4; --warn:#9A6A0B; --warn-bg:#FBEFD0;
+  --bad:#A63434; --bad-bg:#F8DCDC;
+  --r:6px;
+  --sans:Heebo,"Segoe UI",system-ui,-apple-system,sans-serif;
+  --serif:"Frank Ruhl Libre",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);
+     -webkit-text-size-adjust:100%;min-height:100vh;display:flex;flex-direction:column}
+main{flex:1}
+h1,h2,h3{font-family:var(--serif);font-weight:700;text-wrap:balance;margin:0}
+h1{font-size:1.25rem} h2{font-size:1.1rem} h3{font-size:1rem}
+button,input,select,textarea{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+/* ── מבנה ──────────────────────────────────────────────────────────────── */
+.wrap{max-width:1180px;margin:0 auto;padding:0 1rem}
+header{background:var(--card);border-bottom:1px solid var(--rule)}
+.head{display:flex;align-items:center;gap:.9rem;padding:.7rem 0;flex-wrap:wrap}
+.head img{height:30px;display:block}
+.clinic{font-family:var(--serif);font-weight:700;color:var(--muted);
+        border-inline-start:1px solid var(--rule);padding-inline-start:.9rem}
+.head .grow{flex:1}
+nav{display:flex;gap:.3rem;overflow-x:auto;padding-bottom:.5rem;scrollbar-width:thin}
+nav button{background:none;border:1px solid transparent;border-radius:var(--r);
+  padding:.4rem .85rem;cursor:pointer;color:var(--muted);white-space:nowrap;font-weight:500}
+nav button:hover{background:var(--bg)}
+nav button[aria-current="true"]{background:var(--teal-soft);color:var(--teal);
+  border-color:#BFE0DA;font-weight:700}
+main{padding:1.2rem 0 3rem}
+section[hidden]{display:none}
+.bar{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.bar .grow{flex:1}
+.sub{color:var(--muted);font-size:.87rem;margin:.15rem 0 1rem;max-width:62ch}
+
+/* ── כרטיסים וטבלאות ───────────────────────────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:1rem;margin-bottom:1rem}
+.card > h3{margin-bottom:.15rem}
+.card > .sub{margin-bottom:.9rem}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:start;padding:.5rem .6rem;border-bottom:1px solid var(--rule);vertical-align:middle}
+thead th{background:var(--teal-soft);color:var(--teal);font-weight:700;font-size:.83rem;
+  border-bottom:1px solid #BFE0DA;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.off td{color:var(--muted)}
+.empty{color:var(--muted);padding:1.6rem;text-align:center}
+
+/* ── כפתורים ───────────────────────────────────────────────────────────── */
+.btn{background:var(--teal);color:#fff;border:1px solid var(--teal);border-radius:var(--r);
+  padding:.42rem .95rem;cursor:pointer;font-weight:600}
+.btn:hover{background:#0C5A51}
+.btn.ghost{background:var(--card);color:var(--ink);border-color:var(--rule);font-weight:500}
+.btn.ghost:hover{background:var(--bg)}
+.btn.danger{background:var(--card);color:var(--bad);border-color:#E3C2C2}
+.btn.danger:hover{background:var(--bad-bg)}
+.btn.sm{padding:.25rem .6rem;font-size:.85rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.linky{background:none;border:0;color:var(--teal);cursor:pointer;padding:.15rem;text-decoration:underline}
+
+/* ── שדות ──────────────────────────────────────────────────────────────── */
+label.f{display:block;margin-bottom:.7rem}
+label.f > span{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.2rem}
+input[type=text],input[type=date],input[type=time],input[type=email],input[type=tel],
+input[type=number],select,textarea{
+  width:100%;background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+  padding:.4rem .55rem}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:-1px;border-color:var(--teal)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0 .9rem}
+
+/* ── צ'יפים ומתגים ─────────────────────────────────────────────────────── */
+.chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.chip{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+  padding:.3rem .7rem;cursor:pointer;font-size:.87rem;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--teal-soft);border-color:#BFE0DA;color:var(--teal);font-weight:700}
+.tag{display:inline-block;border:1px solid var(--rule);border-radius:var(--r);
+  padding:.05rem .45rem;font-size:.78rem;color:var(--muted);white-space:nowrap}
+.tag.grp{border-inline-start-width:3px}
+
+/* ── רשת זמינות ────────────────────────────────────────────────────────── */
+.avail{border-collapse:collapse;font-size:.85rem;min-width:100%}
+.avail th{background:none;color:var(--muted);border:0;font-size:.78rem;font-weight:500;
+  padding:.2rem .25rem;text-align:center;white-space:nowrap}
+.avail th:first-child{text-align:start}
+.avail td{border:0;padding:.12rem}
+.avail td:first-child{color:var(--muted);font-size:.8rem;white-space:nowrap;padding-inline-end:.5rem}
+.cell{width:100%;min-width:38px;border:1px solid var(--rule);background:var(--card);
+  border-radius:var(--r);padding:.3rem .1rem;cursor:pointer;font-size:.8rem;color:var(--muted);line-height:1.1}
+.cell[data-v="soft"]{background:var(--warn-bg);border-color:#E6D3A0;color:var(--warn)}
+.cell[data-v="hard"]{background:var(--bad-bg);border-color:#E3C2C2;color:var(--bad);font-weight:700}
+.cell[data-v="on"]{background:var(--teal-soft);border-color:#BFE0DA;color:var(--teal);font-weight:700}
+.cell[disabled]{opacity:.3;cursor:default}
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;color:var(--muted);font-size:.8rem;margin-top:.5rem}
+.legend i{font-style:normal;border-radius:3px;padding:0 .35rem;border:1px solid var(--rule)}
+
+/* ── באנרים ────────────────────────────────────────────────────────────── */
+.note{border:1px solid var(--rule);border-radius:var(--r);padding:.6rem .8rem;
+  margin-bottom:1rem;font-size:.88rem;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+.note .grow{flex:1;min-width:12ch}
+.note.warn{background:var(--warn-bg);border-color:#E6D3A0;color:#6E4B07}
+.note.info{background:var(--teal-soft);border-color:#BFE0DA;color:#0B4F47}
+.note.bad{background:var(--bad-bg);border-color:#E3C2C2;color:var(--bad)}
+
+/* ── דיאלוגים ──────────────────────────────────────────────────────────── */
+dialog{border:1px solid var(--rule);border-radius:var(--r);padding:0;max-width:min(620px,94vw);
+  width:100%;background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(30,42,44,.45)}
+dialog .dh{padding:.85rem 1rem;border-bottom:1px solid var(--rule)}
+dialog .db{padding:1rem;max-height:min(66vh,640px);overflow-y:auto}
+dialog .da{padding:.75rem 1rem;border-top:1px solid var(--rule);display:flex;gap:.5rem;justify-content:flex-start}
+dialog .da .grow{flex:1}
+
+/* ── פוטר ──────────────────────────────────────────────────────────────── */
+footer{border-top:1px solid var(--rule);background:var(--card);padding:1.2rem 0;color:var(--muted);font-size:.85rem}
+footer .funnel{margin-top:.5rem}
+footer a{color:var(--teal)}
+
+@media (max-width:720px){
+  .head{gap:.6rem} .clinic{border:0;padding:0;width:100%;font-size:.9rem}
+  .card{padding:.8rem}
+  th,td{padding:.45rem .4rem}
+  /* טבלאות רשומות מתהפכות לכרטיסים — הטבלה לא מתכווצת, היא מתפרקת.
+     כך אף עמודה לא יכולה ליפול מהמסך. */
+  table.rows{display:block}
+  table.rows thead{display:none}
+  table.rows tbody,table.rows tr{display:block}
+  table.rows tr{border:1px solid var(--rule);border-radius:var(--r);margin:.5rem;padding:.2rem 0}
+  table.rows td{display:flex;gap:.8rem;align-items:baseline;justify-content:space-between;
+    border:0;padding:.25rem .7rem;text-align:end}
+  table.rows td::before{content:attr(data-label);color:var(--muted);font-size:.78rem;
+    text-align:start;flex:0 0 6.5rem}
+  /* תא בלי data-label (שם, כפתורים) — בלי תווית ובלי המקום שלה */
+  table.rows td:not([data-label])::before{content:none}
+  table.rows td:not([data-label]){justify-content:flex-start;text-align:start}
+  table.rows td.acts{justify-content:flex-end}
+  table.rows td:first-child{border-bottom:1px solid var(--rule);padding-bottom:.4rem;margin-bottom:.2rem}
+  .card > .scroll > table.rows{margin:0}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="head">
+      <img src="claudevet-wordmark.svg" alt="ClaudeVet">
+      <h1>לוח משמרות</h1>
+      <span class="clinic" id="clinicName" hidden></span>
+      <span class="grow"></span>
+    </div>
+    <nav id="nav">
+      <button data-tab="employees" aria-current="true">עובדים</button>
+      <button data-tab="settings">הגדרות</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banners"></div>
+
+  <!-- ══ עובדים ══════════════════════════════════════════════════════════ -->
+  <section id="tab-employees">
+    <div class="bar">
+      <h2>צוות המרפאה</h2>
+      <span class="grow"></span>
+      <button class="btn" id="addEmp">הוספת עובד</button>
+    </div>
+    <p class="sub">כל עובד נושא את הפרטים האישיים שלו ואת מגבלות הזמינות — עליהן מתבסס מחולל המשמרות.
+      אין כאן שכר ואין נתונים כספיים.</p>
+    <div class="card" style="padding:0">
+      <div class="scroll"><table id="empTable" class="rows"><thead><tr>
+        <th>שם</th><th>קבוצה</th><th>טלפון</th><th>מייל</th>
+        <th>מגבלות</th><th>ימים מועדפים</th><th></th>
+      </tr></thead><tbody id="empBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ══ הגדרות ══════════════════════════════════════════════════════════ -->
+  <section id="tab-settings" hidden>
+    <h2>הגדרות המרפאה</h2>
+    <p class="sub">הגדירו כאן את המציאות של המרפאה שלכם — שעות, ימים ותפקידים. כל שאר המסכים נגזרים מזה.</p>
+
+    <div class="card">
+      <h3>שם ופרטים</h3>
+      <p class="sub">השם מופיע בכותרת ובתמונת הלוח שנשלחת לצוות.</p>
+      <label class="f" style="max-width:340px"><span>שם המרפאה</span>
+        <input type="text" id="setClinic" placeholder="למשל: מרפאה וטרינרית הרצליה"></label>
+    </div>
+
+    <div class="card">
+      <h3>ימי פעילות</h3>
+      <p class="sub">אילו ימים המרפאה פועלת בהם.</p>
+      <div class="chips" id="setDays"></div>
+    </div>
+
+    <div class="card">
+      <h3>משמרות</h3>
+      <p class="sub">עד שלוש משמרות ביום. השעות מופיעות בלוח ובתמונה שנשלחת לצוות.</p>
+      <div id="setParts"></div>
+      <button class="btn ghost sm" id="addPart" style="margin-top:.4rem">הוספת משמרת</button>
+    </div>
+
+    <div class="card">
+      <h3>אילו משמרות בכל יום</h3>
+      <p class="sub">בשישי בדרך כלל אין אחר הצהריים. לחיצה מדליקה ומכבה.</p>
+      <div class="scroll"><table class="avail" id="setDayParts"></table></div>
+    </div>
+
+    <div class="card">
+      <h3>פותח</h3>
+      <p class="sub">עובד שמגיע מוקדם לפתוח את המרפאה. מסומן בלוח ובתמונה.</p>
+      <label class="f" style="max-width:260px">
+        <span>שעת פתיחה</span><input type="time" id="setOpenerStart"></label>
+      <div class="grid2" style="max-width:520px">
+        <label class="f"><span>באיזו משמרת</span><select id="setOpenerPart"></select></label>
+      </div>
+      <div class="sub" style="margin:0 0 .3rem">באילו ימים</div>
+      <div class="chips" id="setOpenerDays"></div>
+    </div>
+
+    <div class="card">
+      <h3>קבוצות תפקיד</h3>
+      <p class="sub">הקבוצה קובעת אילו דרישות משמרת העובד ממלא. קבוצת החפיפות משובצת <b>תמיד בנוסף</b>
+        ואינה נספרת בדרישות.</p>
+      <div class="scroll"><table><thead><tr><th>שם הקבוצה</th><th>סוג</th><th>עובדים</th><th></th></tr></thead>
+        <tbody id="setGroups"></tbody></table></div>
+      <button class="btn ghost sm" id="addGroup" style="margin-top:.6rem">הוספת קבוצה</button>
+    </div>
+
+    <div class="card">
+      <h3>גיבוי הנתונים</h3>
+      <p class="sub">כל הנתונים נשמרים <b>בדפדפן הזה בלבד</b> — שום דבר לא נשלח לשום מקום.
+        ניקוי היסטוריית גלישה ימחק אותם. גבו לקובץ מדי פעם.</p>
+      <div class="bar" style="margin:0">
+        <button class="btn" id="doExport">גיבוי לקובץ</button>
+        <button class="btn ghost" id="doImport">שחזור מקובץ</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+        <span class="grow"></span>
+        <span class="tag num" id="backupInfo"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>איפוס</h3>
+      <p class="sub">מחיקת כל הנתונים מהדפדפן והתחלה מחדש. לא ניתן לבטל.</p>
+      <button class="btn danger" id="doReset">מחיקת כל הנתונים</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    כל הנתונים נשמרים בדפדפן שלכם בלבד. אין שרת, אין חשבון, אין מעקב.
+    <div class="funnel">מוגש חינם ע״י ד״ר גיל קרן · ClaudeVet</div>
+  </div>
+</footer>
+
+<!-- ══ דיאלוג עובד ═══════════════════════════════════════════════════════ -->
+<dialog id="empDlg">
+  <form method="dialog">
+    <div class="dh"><h3 id="empDlgTitle">עובד חדש</h3></div>
+    <div class="db">
+      <div class="grid2">
+        <label class="f"><span>שם פרטי *</span><input type="text" id="eFirst" required></label>
+        <label class="f"><span>שם משפחה</span><input type="text" id="eLast"></label>
+        <label class="f"><span>קבוצת תפקיד</span><select id="eGroup"></select></label>
+        <label class="f"><span>תאריך לידה</span><input type="date" id="eBirth"></label>
+        <label class="f"><span>טלפון</span><input type="tel" id="ePhone" inputmode="tel"></label>
+        <label class="f"><span>מייל</span><input type="email" id="eMail"></label>
+      </div>
+
+      <h3 style="margin-top:.6rem">משובץ רק למשמרות</h3>
+      <p class="sub" style="margin-bottom:.5rem">בלי בחירה — כל המשמרות פתוחות בפניו.</p>
+      <div class="chips" id="eParts"></div>
+
+      <h3 style="margin-top:1.1rem">זמינות</h3>
+      <p class="sub" style="margin-bottom:.5rem">לחיצה על תא מחליפה מצב: פנוי ← עדיף שלא ← חסום.
+        <b>חסום</b> לא ייפרץ לעולם; <b>עדיף שלא</b> ייפרץ רק אם אין אף חלופה.</p>
+      <div class="scroll"><table class="avail" id="eAvail"></table></div>
+      <div class="legend">
+        <span><i>פנוי</i> אפשר לשבץ</span>
+        <span><i style="background:var(--warn-bg);border-color:#E6D3A0;color:var(--warn)">עדיף שלא</i> מגבלה רכה</span>
+        <span><i style="background:var(--bad-bg);border-color:#E3C2C2;color:var(--bad)">חסום</i> מגבלה קשה</span>
+      </div>
+
+      <div id="ePrefWrap">
+        <h3 style="margin-top:1.1rem">ימים מועדפים</h3>
+        <p class="sub" style="margin-bottom:.5rem">העדפה בלבד — המחולל ינסה לשבץ בימים האלה, אבל לא על חשבון אילוץ.</p>
+        <div class="chips" id="ePrefDays"></div>
+      </div>
+
+      <div id="eTraineeWrap" hidden>
+        <h3 style="margin-top:1.1rem">ימי עבודה קבועים</h3>
+        <p class="sub" style="margin-bottom:.5rem">עובד בחפיפה משובץ בדיוק במשמרות האלה, בכל שבוע, <b>בנוסף</b> לצוות הרגיל.</p>
+        <div class="scroll"><table class="avail" id="eTrainee"></table></div>
+      </div>
+    </div>
+    <div class="da">
+      <button class="btn" id="empSave" value="save" type="submit">שמירה</button>
+      <button class="btn ghost" value="cancel" formnovalidate>ביטול</button>
+      <span class="grow"></span>
+      <button class="btn danger" id="empArchive" value="archive" type="button" hidden>ארכוב</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ══ דיאלוג אישור כללי ═════════════════════════════════════════════════ -->
+<dialog id="askDlg">
+  <form method="dialog">
+    <div class="dh"><h3 id="askTitle"></h3></div>
+    <div class="db"><div id="askBody"></div></div>
+    <div class="da">
+      <button class="btn" id="askOk" value="ok">אישור</button>
+      <button class="btn ghost" value="cancel">ביטול</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="solver.js"></script>
+<script>
+(function () {
+'use strict';
+var S = globalThis.VetSolver;
+var $ = function (id) { return document.getElementById(id); };
+var el = function (tag, props, kids) {
+  var n = document.createElement(tag);
+  Object.keys(props || {}).forEach(function (k) {
+    // מפתח עם מקף (data-*/aria-*) הוא תכונה, לא property — Object.assign היה
+    // יוצר שדה JS מת שה-CSS לא רואה.
+    if (k.indexOf('-') > 0) n.setAttribute(k, props[k]); else n[k] = props[k];
+  });
+  (kids || []).forEach(function (k) { n.append(k); });
+  return n;
+};
+
+/* ══ אחסון ═══════════════════════════════════════════════════════════════ */
+var KEY = 'vetshifts:v1', SCHEMA = 1;
+// כל שדרוג סכימה מוסיף כאן צעד. בגרסה 1 אין צעדים — ה-hook קיים כדי שגרסה 2
+// לא תשבור נתונים של מרפאות אמיתיות.
+var MIGRATIONS = {};
+
+function defaults() {
+  return {
+    schemaVersion: SCHEMA,
+    settings: {
+      clinicName: '',
+      parts: [{ key: 'p1', label: 'בוקר', start: '08:00', end: '14:00' },
+              { key: 'p2', label: 'אחר הצהריים', start: '16:00', end: '20:00' }],
+      activeDays: [0, 1, 2, 3, 4, 5],
+      dayParts: { '0': ['p1', 'p2'], '1': ['p1', 'p2'], '2': ['p1', 'p2'],
+                  '3': ['p1', 'p2'], '4': ['p1', 'p2'], '5': ['p1'] },
+      opener: { part: 'p1', start: '07:30', days: [0, 1, 2, 3, 4] },
+      roleGroups: [{ key: 'vet', name: 'וטרינר/ית', rank: 1 },
+                   { key: 'assistant', name: 'אסיסטנט/ית', rank: 2 },
+                   { key: 'trainee', name: 'חפיפות', rank: 3, isTrainee: true }],
+      minDoubles: true
+    },
+    employees: [], prefs: {}, traineeSlots: {}, demand: [], absences: [],
+    specialists: [], weeks: {},
+    meta: { nextId: 1, lastBackupAt: null, createdAt: S.todayISO() }
+  };
+}
+
+var state = null;
+
+function migrate(b) {
+  while (b.schemaVersion < SCHEMA) {
+    var step = MIGRATIONS[b.schemaVersion + 1];
+    if (!step) { b.schemaVersion = SCHEMA; break; }
+    b = step(b); b.schemaVersion++;
+  }
+  return b;
+}
+
+function load() {
+  var raw = null;
+  try { raw = localStorage.getItem(KEY); } catch (e) { /* גלישה פרטית */ }
+  if (!raw) return defaults();
+  try { return migrate(JSON.parse(raw)); }
+  catch (e) { banner('bad', 'הנתונים השמורים לא נקראו והוחלפו בברירת מחדל. אם יש לכם קובץ גיבוי — שחזרו ממנו.'); return defaults(); }
+}
+
+var saving = false;
+function save() {
+  saving = true;
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch (e) {
+    banner('bad', 'הדפדפן לא הצליח לשמור (אין מקום או שהאחסון חסום). גבו לקובץ עכשיו כדי לא לאבד נתונים.');
+  }
+  setTimeout(function () { saving = false; }, 0);
+}
+
+function nextId() { return state.meta.nextId++; }
+
+/* ══ באנרים ══════════════════════════════════════════════════════════════ */
+function banner(kind, text, actionLabel, action) {
+  var n = el('div', { className: 'note ' + kind });
+  n.append(el('span', { className: 'grow', textContent: text }));
+  if (actionLabel) {
+    var b = el('button', { className: 'btn sm ghost', textContent: actionLabel });
+    b.onclick = action; n.append(b);
+  }
+  var x = el('button', { className: 'linky', textContent: 'סגירה', title: 'הסתרה' });
+  x.onclick = function () { n.remove(); };
+  n.append(x);
+  $('banners').append(n);
+  return n;
+}
+
+function backupNag() {
+  var last = state.meta.lastBackupAt;
+  var stale = !last || (Date.parse(S.todayISO()) - Date.parse(last)) / 86400000 > 21;
+  var hasData = state.employees.length || Object.keys(state.weeks).length;
+  if (!stale || !hasData) return;
+  banner('warn', last ? 'הגיבוי האחרון היה ב־' + fmtDate(last) + '. הנתונים יושבים בדפדפן הזה בלבד.'
+                      : 'עוד לא גיביתם. הנתונים יושבים בדפדפן הזה בלבד — ניקוי היסטוריית גלישה ימחק אותם.',
+         'גיבוי לקובץ', doExport);
+}
+
+/* ══ עזרים ═══════════════════════════════════════════════════════════════ */
+var DAY = S.DAY_HE;
+function partsOf() { return state.settings.parts; }
+function partKeys() { return partsOf().map(function (p) { return p.key; }); }
+function partLabel(k) { return S.partLabel(state.settings, k); }
+function dayPartsOf(d) {
+  var dp = state.settings.dayParts[String(d)];
+  return dp || partKeys();
+}
+function groupOf(key) {
+  return state.settings.roleGroups.find(function (g) { return g.key === key; });
+}
+function groupOfEmp(e) {
+  var p = state.prefs[e.id];
+  return groupOf(p && p.roleGroup) || S.defaultPrefFor(e, state.settings) && groupOf(S.defaultPrefFor(e, state.settings).roleGroup)
+    || state.settings.roleGroups[0];
+}
+function groupColor(key) {
+  var i = state.settings.roleGroups.findIndex(function (g) { return g.key === key; });
+  return ['var(--teal)', 'var(--copper)', '#5F6E6C', '#4A6FA5', '#7A5B8F'][i < 0 ? 0 : i % 5];
+}
+function fmtDate(iso) {
+  if (!iso) return '';
+  return (+iso.slice(8, 10)) + '.' + (+iso.slice(5, 7)) + '.' + iso.slice(0, 4);
+}
+function pairsHas(list, d, p) {
+  return (list || []).some(function (x) { return x[0] === d && x[1] === p; });
+}
+function pairsToggle(list, d, p, on) {
+  var i = (list || []).findIndex(function (x) { return x[0] === d && x[1] === p; });
+  if (on && i < 0) list.push([d, p]);
+  if (!on && i >= 0) list.splice(i, 1);
+  return list;
+}
+
+/* ══ רשת ימים × משמרות ═══════════════════════════════════════════════════
+   רכיב אחד שמשרת את שלוש הרשתות: זמינות, ימי החפיפות, ומשמרות-לפי-יום.
+   render(cell) מחזיר את המצב לתא, onClick מחליף אותו.                   */
+function availGrid(table, opts) {
+  table.textContent = '';
+  var days = state.settings.activeDays.slice().sort(function (a, b) { return a - b; });
+  var keys = partKeys();
+  var head = el('tr'); head.append(el('th', { textContent: '' }));
+  days.forEach(function (d) { head.append(el('th', { textContent: DAY[d] })); });
+  table.append(el('thead', {}, [head]));
+  var body = el('tbody');
+  keys.forEach(function (pk) {
+    var tr = el('tr');
+    tr.append(el('td', { textContent: partLabel(pk) }));
+    days.forEach(function (d) {
+      var td = el('td');
+      var exists = !opts.respectDayParts || dayPartsOf(d).indexOf(pk) !== -1;
+      var b = el('button', { type: 'button', className: 'cell' });
+      if (!exists) {
+        b.disabled = true; b.textContent = '—';
+        b.title = 'אין משמרת ' + partLabel(pk) + ' ביום ' + DAY[d];
+      } else {
+        var v = opts.get(d, pk);
+        b.dataset.v = v.v; b.textContent = v.label;
+        b.title = DAY[d] + ' · ' + partLabel(pk) + ' — ' + v.label;
+        b.onclick = function () { opts.set(d, pk); availGrid(table, opts); };
+      }
+      td.append(b); tr.append(td);
+    });
+    body.append(tr);
+  });
+  table.append(body);
+}
+
+/* ══ טאבים ═══════════════════════════════════════════════════════════════ */
+var TABS = ['employees', 'settings'];
+function showTab(name) {
+  TABS.forEach(function (t) { $('tab-' + t).hidden = (t !== name); });
+  Array.from($('nav').children).forEach(function (b) {
+    b.setAttribute('aria-current', String(b.dataset.tab === name));
+  });
+}
+$('nav').addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-tab]');
+  if (b) showTab(b.dataset.tab);
+});
+
+/* ══ עובדים ══════════════════════════════════════════════════════════════ */
+function renderEmployees() {
+  var body = $('empBody');
+  body.textContent = '';
+  var list = state.employees.slice().sort(function (a, b) {
+    if ((a.active !== false) !== (b.active !== false)) return a.active === false ? 1 : -1;
+    var ra = (groupOfEmp(a).rank || 9), rb = (groupOfEmp(b).rank || 9);
+    return ra - rb || S.fullName(a).localeCompare(S.fullName(b), 'he');
+  });
+  if (!list.length) {
+    body.append(el('tr', {}, [el('td', { colSpan: 7, className: 'empty',
+      textContent: 'עוד אין עובדים. התחילו ב״הוספת עובד״.' })]));
+    return;
+  }
+  list.forEach(function (e) {
+    var g = groupOfEmp(e), tr = el('tr');
+    if (e.active === false) tr.className = 'off';
+
+    var nameCell = el('td');
+    nameCell.append(el('b', { textContent: S.fullName(e) }));
+    if (e.active === false) nameCell.append(' ', el('span', { className: 'tag', textContent: 'בארכיון' }));
+    tr.append(nameCell);
+
+    tr.append(el('td', { 'data-label': 'קבוצה' }, [el('span', {
+      className: 'tag grp', textContent: g.name,
+      style: 'border-inline-start-color:' + groupColor(g.key)
+    })]));
+    tr.append(el('td', { className: 'num', 'data-label': 'טלפון', textContent: e.phone || '—' }));
+    tr.append(el('td', { 'data-label': 'מייל', textContent: e.email || '—' }));
+
+    var hard = S.fmtConstraintDays(e.hardUnavailable, state.settings);
+    var soft = S.fmtConstraintDays(e.softUnavailable, state.settings);
+    var cons = el('td', { 'data-label': 'מגבלות', style: 'font-size:.83rem' });
+    if (hard) cons.append(el('div', { style: 'color:var(--bad)', textContent: 'חסום: ' + hard }));
+    if (soft) cons.append(el('div', { style: 'color:var(--warn)', textContent: 'עדיף שלא: ' + soft }));
+    if (!hard && !soft) cons.append(el('span', { style: 'color:var(--muted)', textContent: '—' }));
+    tr.append(cons);
+
+    var pd = g.isTrainee
+      ? S.fmtConstraintDays(state.traineeSlots[e.id] || [], state.settings)
+      : (e.preferredDays || []).map(function (d) { return DAY[d]; }).join(', ');
+    tr.append(el('td', { 'data-label': g.isTrainee ? 'ימי עבודה' : 'ימים מועדפים',
+      style: 'font-size:.83rem;color:var(--muted)', textContent: pd || '—' }));
+
+    var act = el('td', { className: 'acts', style: 'text-align:end;white-space:nowrap' });
+    var edit = el('button', { className: 'btn ghost sm', textContent: 'עריכה' });
+    edit.onclick = function () { openEmp(e.id); };
+    act.append(edit);
+    if (e.active === false) {
+      var un = el('button', { className: 'btn ghost sm', textContent: 'החזרה', style: 'margin-inline-start:.3rem' });
+      un.onclick = function () { e.active = true; save(); renderEmployees(); };
+      act.append(un);
+    }
+    tr.append(act);
+    body.append(tr);
+  });
+}
+
+var editingId = null;
+function openEmp(id) {
+  var e = id == null
+    ? { id: null, firstName: '', lastName: '', birthDate: '', email: '', phone: '',
+        role: 'vet', active: true, allowedParts: [], hardUnavailable: [], softUnavailable: [], preferredDays: [] }
+    : JSON.parse(JSON.stringify(state.employees.find(function (x) { return x.id === id; })));
+  editingId = id;
+  var slots = id == null ? [] : JSON.parse(JSON.stringify(state.traineeSlots[id] || []));
+
+  $('empDlgTitle').textContent = id == null ? 'עובד חדש' : 'עריכת ' + S.fullName(e);
+  $('eFirst').value = e.firstName || ''; $('eLast').value = e.lastName || '';
+  $('eBirth').value = e.birthDate || ''; $('ePhone').value = e.phone || '';
+  $('eMail').value = e.email || '';
+  $('empArchive').hidden = (id == null);
+  $('empArchive').textContent = e.active === false ? 'החזרה מהארכיון' : 'ארכוב';
+
+  // קבוצה
+  var sel = $('eGroup'); sel.textContent = '';
+  var curGroup = (state.prefs[id] || {}).roleGroup || S.defaultPrefFor(e, state.settings).roleGroup;
+  state.settings.roleGroups.forEach(function (g) {
+    sel.append(el('option', { value: g.key, textContent: g.name, selected: g.key === curGroup }));
+  });
+
+  // משמרות מותרות
+  var chips = $('eParts'); chips.textContent = '';
+  partsOf().forEach(function (p) {
+    var on = (e.allowedParts || []).indexOf(p.key) !== -1;
+    var c = el('button', { type: 'button', className: 'chip', textContent: p.label });
+    c.setAttribute('aria-pressed', String(on));
+    c.onclick = function () {
+      on = !on; c.setAttribute('aria-pressed', String(on));
+      e.allowedParts = e.allowedParts || [];
+      var i = e.allowedParts.indexOf(p.key);
+      if (on && i < 0) e.allowedParts.push(p.key);
+      if (!on && i >= 0) e.allowedParts.splice(i, 1);
+    };
+    chips.append(c);
+  });
+
+  // זמינות — פנוי ← עדיף שלא ← חסום
+  availGrid($('eAvail'), {
+    respectDayParts: true,
+    get: function (d, p) {
+      if (pairsHas(e.hardUnavailable, d, p)) return { v: 'hard', label: 'חסום' };
+      if (pairsHas(e.softUnavailable, d, p)) return { v: 'soft', label: 'עדיף שלא' };
+      return { v: '', label: 'פנוי' };
+    },
+    set: function (d, p) {
+      e.hardUnavailable = e.hardUnavailable || []; e.softUnavailable = e.softUnavailable || [];
+      if (pairsHas(e.hardUnavailable, d, p)) { pairsToggle(e.hardUnavailable, d, p, false); }
+      else if (pairsHas(e.softUnavailable, d, p)) {
+        pairsToggle(e.softUnavailable, d, p, false); pairsToggle(e.hardUnavailable, d, p, true);
+      } else { pairsToggle(e.softUnavailable, d, p, true); }
+    }
+  });
+
+  // ימים מועדפים
+  var pref = $('ePrefDays'); pref.textContent = '';
+  state.settings.activeDays.slice().sort(function (a, b) { return a - b; }).forEach(function (d) {
+    var on = (e.preferredDays || []).indexOf(d) !== -1;
+    var c = el('button', { type: 'button', className: 'chip', textContent: DAY[d] });
+    c.setAttribute('aria-pressed', String(on));
+    c.onclick = function () {
+      on = !on; c.setAttribute('aria-pressed', String(on));
+      e.preferredDays = e.preferredDays || [];
+      var i = e.preferredDays.indexOf(d);
+      if (on && i < 0) e.preferredDays.push(d);
+      if (!on && i >= 0) e.preferredDays.splice(i, 1);
+    };
+    pref.append(c);
+  });
+
+  // ימי החפיפות — רק לקבוצת חפיפות
+  function syncTrainee() {
+    var isT = !!(groupOf(sel.value) || {}).isTrainee;
+    $('eTraineeWrap').hidden = !isT;
+    $('ePrefWrap').hidden = isT;
+    if (isT) availGrid($('eTrainee'), {
+      respectDayParts: true,
+      get: function (d, p) { return pairsHas(slots, d, p) ? { v: 'on', label: 'עובד' } : { v: '', label: '—' }; },
+      set: function (d, p) { pairsToggle(slots, d, p, !pairsHas(slots, d, p)); }
+    });
+  }
+  sel.onchange = syncTrainee; syncTrainee();
+
+  $('empDlg')._commit = function () {
+    e.firstName = $('eFirst').value.trim();
+    e.lastName = $('eLast').value.trim();
+    e.birthDate = $('eBirth').value; e.phone = $('ePhone').value.trim();
+    e.email = $('eMail').value.trim();
+    if (!e.firstName) return false;
+    if (e.id == null) { e.id = nextId(); state.employees.push(e); }
+    else {
+      var i = state.employees.findIndex(function (x) { return x.id === e.id; });
+      state.employees[i] = e;
+    }
+    var p = state.prefs[e.id] || { targetMin: 0, targetMax: 7, prefer: 'any', maxDoubles: 7, notes: '' };
+    p.roleGroup = sel.value;
+    state.prefs[e.id] = p;
+    if ((groupOf(sel.value) || {}).isTrainee) state.traineeSlots[e.id] = slots;
+    else delete state.traineeSlots[e.id];
+    return true;
+  };
+  $('empDlg')._archive = function () {
+    if (e.id == null) return;
+    var emp = state.employees.find(function (x) { return x.id === e.id; });
+    emp.active = emp.active === false;
+    save(); renderEmployees();
+  };
+  $('empDlg').showModal();
+}
+
+$('addEmp').onclick = function () { openEmp(null); };
+$('empArchive').onclick = function () { $('empDlg')._archive(); $('empDlg').close('archived'); };
+$('empDlg').addEventListener('close', function () {
+  if (this.returnValue === 'save') { if (this._commit()) { save(); renderEmployees(); } }
+});
+
+/* ══ אישור ═══════════════════════════════════════════════════════════════ */
+function ask(title, bodyText, okLabel) {
+  return new Promise(function (resolve) {
+    $('askTitle').textContent = title;
+    $('askBody').textContent = bodyText;
+    $('askOk').textContent = okLabel || 'אישור';
+    var d = $('askDlg');
+    d.addEventListener('close', function h() {
+      d.removeEventListener('close', h); resolve(d.returnValue === 'ok');
+    });
+    d.showModal();
+  });
+}
+
+/* ══ הגדרות ══════════════════════════════════════════════════════════════ */
+function renderSettings() {
+  var st = state.settings;
+  $('setClinic').value = st.clinicName || '';
+
+  // ימי פעילות
+  var days = $('setDays'); days.textContent = '';
+  DAY.forEach(function (name, d) {
+    var on = st.activeDays.indexOf(d) !== -1;
+    var c = el('button', { type: 'button', className: 'chip', textContent: name });
+    c.setAttribute('aria-pressed', String(on));
+    c.onclick = function () {
+      var i = st.activeDays.indexOf(d);
+      if (i >= 0) { st.activeDays.splice(i, 1); delete st.dayParts[String(d)]; }
+      else { st.activeDays.push(d); st.dayParts[String(d)] = partKeys(); }
+      st.activeDays.sort(function (a, b) { return a - b; });
+      cleanup(); save(); renderSettings();
+    };
+    days.append(c);
+  });
+
+  // משמרות
+  var wrap = $('setParts'); wrap.textContent = '';
+  st.parts.forEach(function (p, i) {
+    var row = el('div', { className: 'grid2', style: 'align-items:end;max-width:640px' });
+    var lab = el('input', { type: 'text', value: p.label });
+    lab.oninput = function () { p.label = lab.value; save(); };
+    var s = el('input', { type: 'time', value: p.start });
+    s.onchange = function () { p.start = s.value; save(); };
+    var e2 = el('input', { type: 'time', value: p.end });
+    e2.onchange = function () { p.end = e2.value; save(); };
+    row.append(el('label', { className: 'f' }, [el('span', { textContent: 'שם המשמרת' }), lab]),
+               el('label', { className: 'f' }, [el('span', { textContent: 'משעה' }), s]),
+               el('label', { className: 'f' }, [el('span', { textContent: 'עד שעה' }), e2]));
+    if (st.parts.length > 1) {
+      var del = el('button', { type: 'button', className: 'btn danger sm', textContent: 'הסרה',
+                               style: 'margin-bottom:.7rem' });
+      del.onclick = function () {
+        ask('הסרת משמרת', 'המשמרת "' + p.label + '" תוסר, וכל השיבוצים והמגבלות שקשורים אליה יימחקו.', 'הסרה')
+          .then(function (yes) {
+            if (!yes) return;
+            st.parts.splice(i, 1); cleanup(); save(); renderSettings();
+          });
+      };
+      row.append(del);
+    }
+    wrap.append(row);
+  });
+  $('addPart').disabled = st.parts.length >= 3;
+
+  // אילו משמרות בכל יום
+  availGrid($('setDayParts'), {
+    get: function (d, p) {
+      return dayPartsOf(d).indexOf(p) !== -1 ? { v: 'on', label: 'יש' } : { v: '', label: 'אין' };
+    },
+    set: function (d, p) {
+      var list = (st.dayParts[String(d)] || partKeys()).slice();
+      var i = list.indexOf(p);
+      if (i >= 0) list.splice(i, 1); else list.push(p);
+      st.dayParts[String(d)] = list;
+      cleanup(); save();
+    }
+  });
+
+  // פותח
+  $('setOpenerStart').value = st.opener.start || '';
+  $('setOpenerStart').onchange = function () { st.opener.start = this.value; save(); };
+  var op = $('setOpenerPart'); op.textContent = '';
+  st.parts.forEach(function (p) {
+    op.append(el('option', { value: p.key, textContent: p.label, selected: p.key === st.opener.part }));
+  });
+  op.onchange = function () { st.opener.part = this.value; save(); };
+  var od = $('setOpenerDays'); od.textContent = '';
+  st.activeDays.forEach(function (d) {
+    var on = (st.opener.days || []).indexOf(d) !== -1;
+    var c = el('button', { type: 'button', className: 'chip', textContent: DAY[d] });
+    c.setAttribute('aria-pressed', String(on));
+    c.onclick = function () {
+      var i = st.opener.days.indexOf(d);
+      if (i >= 0) st.opener.days.splice(i, 1); else st.opener.days.push(d);
+      save(); renderSettings();
+    };
+    od.append(c);
+  });
+
+  // קבוצות תפקיד
+  var gb = $('setGroups'); gb.textContent = '';
+  st.roleGroups.forEach(function (g, i) {
+    var used = state.employees.filter(function (e) {
+      return e.active !== false && (state.prefs[e.id] || {}).roleGroup === g.key;
+    }).length;
+    var tr = el('tr');
+    var inp = el('input', { type: 'text', value: g.name });
+    inp.oninput = function () { g.name = inp.value; save(); };
+    inp.onblur = function () { renderEmployees(); };
+    tr.append(el('td', {}, [inp]));
+    tr.append(el('td', {}, [el('span', {
+      className: 'tag grp', style: 'border-inline-start-color:' + groupColor(g.key),
+      textContent: g.isTrainee ? 'תמיד בנוסף' : 'ממלא דרישות'
+    })]));
+    tr.append(el('td', { className: 'num', textContent: String(used) }));
+    var act = el('td', { style: 'text-align:end' });
+    if (st.roleGroups.length > 1) {
+      var del = el('button', { className: 'btn danger sm', textContent: 'הסרה', disabled: used > 0 });
+      del.title = used > 0 ? 'יש עובדים בקבוצה הזו' : '';
+      del.onclick = function () { st.roleGroups.splice(i, 1); cleanup(); save(); renderSettings(); };
+      act.append(del);
+    }
+    tr.append(act);
+    gb.append(tr);
+  });
+
+  var lb = state.meta.lastBackupAt;
+  $('backupInfo').textContent = lb ? 'גיבוי אחרון: ' + fmtDate(lb) : 'עוד לא גיביתם';
+
+  $('clinicName').textContent = st.clinicName || '';
+  $('clinicName').hidden = !st.clinicName;
+  document.title = (st.clinicName ? st.clinicName + ' — ' : '') + 'לוח משמרות · VetShifts';
+}
+
+$('setClinic').oninput = function () {
+  state.settings.clinicName = this.value.trim(); save();
+  $('clinicName').textContent = state.settings.clinicName;
+  $('clinicName').hidden = !state.settings.clinicName;
+};
+
+$('addPart').onclick = function () {
+  var st = state.settings;
+  if (st.parts.length >= 3) return;
+  var n = 1; while (st.parts.some(function (p) { return p.key === 'p' + n; })) n++;
+  st.parts.push({ key: 'p' + n, label: 'משמרת ' + st.parts.length, start: '20:00', end: '23:00' });
+  st.activeDays.forEach(function (d) {
+    st.dayParts[String(d)] = (st.dayParts[String(d)] || []).concat(['p' + n]);
+  });
+  save(); renderSettings();
+};
+
+$('addGroup').onclick = function () {
+  var st = state.settings;
+  if (st.roleGroups.length >= 5) return;
+  var n = 1; while (st.roleGroups.some(function (g) { return g.key === 'g' + n; })) n++;
+  st.roleGroups.splice(st.roleGroups.length - (st.roleGroups.some(function (g) { return g.isTrainee; }) ? 1 : 0), 0,
+    { key: 'g' + n, name: 'קבוצה חדשה', rank: st.roleGroups.length });
+  st.roleGroups.forEach(function (g, i) { g.rank = i + 1; });
+  save(); renderSettings();
+};
+
+/* מפתחות יתומים אחרי שינוי בהגדרות — משמרת שהוסרה, יום שכובה, קבוצה שנמחקה. */
+function cleanup() {
+  var st = state.settings, keys = partKeys(), days = st.activeDays;
+  // dayParts קודם — כל שאר הבדיקות נשענות עליו דרך dayPartsOf()
+  Object.keys(st.dayParts).forEach(function (d) {
+    if (days.indexOf(+d) === -1) { delete st.dayParts[d]; return; }
+    st.dayParts[d] = st.dayParts[d].filter(function (k) { return keys.indexOf(k) !== -1; });
+  });
+  var okPair = function (x) {
+    return Array.isArray(x) && days.indexOf(x[0]) !== -1 &&
+      (x[1] == null || (keys.indexOf(x[1]) !== -1 && dayPartsOf(x[0]).indexOf(x[1]) !== -1));
+  };
+  state.employees.forEach(function (e) {
+    e.hardUnavailable = (e.hardUnavailable || []).filter(okPair);
+    e.softUnavailable = (e.softUnavailable || []).filter(okPair);
+    e.preferredDays = (e.preferredDays || []).filter(function (d) { return days.indexOf(d) !== -1; });
+    e.allowedParts = (e.allowedParts || []).filter(function (k) { return keys.indexOf(k) !== -1; });
+  });
+  Object.keys(state.traineeSlots).forEach(function (id) {
+    state.traineeSlots[id] = state.traineeSlots[id].filter(okPair);
+  });
+  state.demand = (state.demand || []).filter(function (d) {
+    return days.indexOf(d.day) !== -1 && dayPartsOf(d.day).indexOf(d.part) !== -1 &&
+      st.roleGroups.some(function (g) { return g.key === d.roleGroup; });
+  });
+  Object.keys(state.weeks).forEach(function (w) {
+    var wk = state.weeks[w];
+    wk.assignments = (wk.assignments || []).filter(function (a) { return okPair([a.day, a.part]); });
+    if (wk.demandOverride) wk.demandOverride = wk.demandOverride.filter(function (d) {
+      return days.indexOf(d.day) !== -1 && dayPartsOf(d.day).indexOf(d.part) !== -1;
+    });
+  });
+  if (keys.indexOf(st.opener.part) === -1) st.opener.part = keys[0];
+  st.opener.days = (st.opener.days || []).filter(function (d) { return days.indexOf(d) !== -1; });
+  Object.keys(state.prefs).forEach(function (id) {
+    var p = state.prefs[id];
+    if (!st.roleGroups.some(function (g) { return g.key === p.roleGroup; })) p.roleGroup = st.roleGroups[0].key;
+    if (p.prefer !== 'any' && keys.indexOf(p.prefer) === -1) p.prefer = 'any';
+  });
+}
+
+/* ══ גיבוי ═══════════════════════════════════════════════════════════════ */
+function doExport() {
+  state.meta.lastBackupAt = S.todayISO();
+  save();
+  var blob = new Blob([JSON.stringify(Object.assign({ app: 'vetshifts', exportedAt: new Date().toISOString() }, state), null, 1)],
+    { type: 'application/json' });
+  var a = el('a', { href: URL.createObjectURL(blob), download: 'vetshifts-' + S.todayISO() + '.json' });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+  renderSettings();
+  Array.from(document.querySelectorAll('.note.warn')).forEach(function (n) { n.remove(); });
+}
+$('doExport').onclick = doExport;
+$('doImport').onclick = function () { $('importFile').click(); };
+$('importFile').onchange = function () {
+  var f = this.files[0]; this.value = '';
+  if (!f) return;
+  f.text().then(function (txt) {
+    var b;
+    try { b = JSON.parse(txt); } catch (e) { return banner('bad', 'הקובץ אינו JSON תקין.'); }
+    if (b.app !== 'vetshifts') return banner('bad', 'זה לא קובץ גיבוי של VetShifts.');
+    if (!(b.schemaVersion <= SCHEMA)) return banner('bad', 'הקובץ נוצר בגרסה חדשה יותר של הכלי. עדכנו את הדף ונסו שוב.');
+    var emps = (b.employees || []).length, weeks = Object.keys(b.weeks || {}).length;
+    ask('שחזור מקובץ', 'הקובץ מכיל ' + emps + ' עובדים ו־' + weeks + ' שבועות. ' +
+        'השחזור יחליף את כל הנתונים שבדפדפן הזה.', 'שחזור').then(function (yes) {
+      if (!yes) return;
+      delete b.app; delete b.exportedAt;
+      state = migrate(b);
+      cleanup(); save(); renderAll();
+      banner('info', 'שוחזרו ' + emps + ' עובדים ו־' + weeks + ' שבועות.');
+    });
+  });
+};
+
+$('doReset').onclick = function () {
+  ask('מחיקת כל הנתונים', 'כל העובדים, ההגדרות והשבועות יימחקו מהדפדפן הזה. לא ניתן לבטל.', 'מחיקה')
+    .then(function (yes) {
+      if (!yes) return;
+      state = defaults(); save(); renderAll();
+      banner('info', 'הכל אופס.');
+    });
+};
+
+/* ══ סנכרון בין לשוניות ══════════════════════════════════════════════════ */
+window.addEventListener('storage', function (ev) {
+  if (ev.key !== KEY || saving) return;
+  banner('info', 'הנתונים עודכנו בלשונית אחרת של הכלי.', 'טעינה מחדש', function () { location.reload(); });
+});
+
+/* ══ הפעלה ═══════════════════════════════════════════════════════════════ */
+function renderAll() { renderSettings(); renderEmployees(); }
+state = load();
+renderAll();
+backupNag();
+if (!state.employees.length) showTab('settings');
+})();
+</script>
+</body>
+</html>
