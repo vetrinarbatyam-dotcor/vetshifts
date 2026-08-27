@@ -197,6 +197,29 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 .chip[style*="--dot"]::before{content:"";display:inline-block;width:.5rem;height:.5rem;
   border-radius:50%;background:var(--dot);margin-inline-end:.35rem;vertical-align:-.05rem}
 
+/* ── מדריך ── */
+.guide{max-width:min(72ch,100%)}
+.guide h3{margin-top:.2rem}
+.guide p{margin:0 0 .7rem}
+.guide ul{margin:0 0 .8rem;padding-inline-start:1.2rem}
+.guide li{margin-bottom:.35rem}
+.guide .card + .card{margin-top:1rem}
+.alarm{background:var(--bad-bg);border:1px solid #E3C2C2;border-inline-start:4px solid var(--bad);
+  border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:1rem}
+.alarm h3{color:var(--bad);margin-bottom:.5rem}
+.alarm ul{margin-bottom:.6rem}
+.alarm .kicker{font-weight:700;color:var(--bad)}
+.steps{list-style:none;margin:0 0 .6rem;padding:0;counter-reset:g;
+  display:flex;flex-direction:column;gap:.45rem}
+.steps li{counter-increment:g;display:grid;grid-template-columns:1.6rem 1fr;gap:.6rem;margin:0}
+.steps li::before{content:counter(g);color:var(--teal);font-weight:700;
+  font-variant-numeric:tabular-nums;text-align:center}
+.callout{background:var(--warn-bg);border:1px solid #E6D3A0;border-radius:var(--r);
+  padding:.7rem .9rem;color:#6E4B07;font-size:.92rem;margin-bottom:.8rem}
+.callout b{color:#5A3D05}
+.guide .where{color:var(--muted);font-size:.87rem}
+.guide .where b{color:var(--teal)}
+
 /* ── באנרים ────────────────────────────────────────────────────────────── */
 .note{border:1px solid var(--rule);border-radius:var(--r);padding:.6rem .8rem;
   margin-bottom:1rem;font-size:.88rem;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
@@ -291,6 +314,7 @@ footer a{color:var(--teal)}
       <button data-tab="employees">עובדים</button>
       <button data-tab="demand">דרישות ויעדים</button>
       <button data-tab="settings">הגדרות</button>
+      <button data-tab="guide">מדריך</button>
     </nav>
   </div>
 </header>
@@ -344,6 +368,108 @@ footer a{color:var(--teal)}
       <div class="scroll"><table id="tgtTable" class="rows"><thead><tr>
         <th>עובד</th><th>מינימום</th><th>מקסימום</th><th>העדפה</th><th>מקס׳ כפולות</th><th>הערות</th>
       </tr></thead><tbody id="tgtBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- מדריך -->
+  <section id="tab-guide" hidden>
+    <div class="guide">
+      <h2>מדריך קצר — מומלץ לקרוא לפני שמתחילים</h2>
+      <p class="sub">שלוש דקות קריאה שיחסכו לכם את התסכול של לאבד שבוע עבודה.</p>
+
+      <div class="alarm">
+        <h3>הנתונים שלכם שמורים בדפדפן הזה בלבד</h3>
+        <p><span class="kicker">ניקוי היסטוריית הגלישה מוחק את הכל.</span>
+          כל העובדים, כל השיבוצים וכל ההגדרות — נעלמים ואי אפשר לשחזר אותם.
+          זה קורה גם כשמנקים ״נתוני אתרים״, ״קבצי Cookie ונתונים״ או ״Clear browsing data״.</p>
+        <p>עוד מצבים שבהם הנתונים לא יהיו שם:</p>
+        <ul>
+          <li><b>חלון פרטי / גלישה בסתר</b> — הכל נמחק ברגע שסוגרים את החלון.</li>
+          <li><b>מחשב אחר, דפדפן אחר או טלפון</b> — לא יראו את מה שהזנתם כאן. אין סנכרון.</li>
+          <li><b>אייפון או אייפד</b> — ספארי מפנה בעצמו אחסון של אתר שלא נכנסתם אליו שבעה ימים.</li>
+        </ul>
+        <p style="margin-bottom:0"><b>אין לנו עותק שלכם.</b> אין שרת ואין חשבון — לא כמדיניות,
+          אלא כי פשוט אין לאן לשלוח. בגלל זה הגיבוי הוא באחריותכם, והוא לוקח חמש שניות.</p>
+      </div>
+
+      <div class="card">
+        <h3>גיבוי לקובץ — עשו את זה עכשיו</h3>
+        <p class="where">איפה: <b>הגדרות ← גיבוי הנתונים ← גיבוי לקובץ</b></p>
+        <ol class="steps">
+          <li>לוחצים ״גיבוי לקובץ״.</li>
+          <li>יורד קובץ בשם <code>vetshifts-2026-08-27.json</code> (עם התאריך של היום) לתיקיית ההורדות.</li>
+          <li>מעבירים אותו למקום שבו אתם שומרים דברים חשובים — Google&nbsp;Drive, OneDrive,
+            תיקייה מגובה או אפילו לשלוח לעצמכם במייל.</li>
+        </ol>
+        <p><b>הקובץ הזה הוא הדבר היחיד שלא תלוי בדפדפן.</b> הוא קובץ רגיל במחשב, וניקוי
+          היסטוריית גלישה לא נוגע בו.</p>
+        <p style="margin-bottom:0">גבו מחדש אחרי כל שינוי משמעותי — עובד חדש, שינוי מגבלות, סוף חודש.
+          הכלי גם יזכיר לכם אם עברו 21 יום בלי גיבוי.</p>
+      </div>
+
+      <div class="card">
+        <h3>שחזור מקובץ — איך מעלים את הגיבוי בחזרה</h3>
+        <p class="where">איפה: <b>הגדרות ← גיבוי הנתונים ← שחזור מקובץ</b></p>
+        <ol class="steps">
+          <li>לוחצים ״שחזור מקובץ״.</li>
+          <li>נפתח חלון בחירת קובץ של המחשב. בוחרים את קובץ ה־<code>.json</code> שגיביתם.</li>
+          <li>הכלי בודק שזה באמת קובץ שלו, ומראה לכם כמה עובדים וכמה שבועות יש בפנים.</li>
+          <li>מאשרים — והכל חוזר.</li>
+        </ol>
+        <div class="callout">
+          <b>שימו לב:</b> השחזור <b>מחליף</b> את מה שיש עכשיו בדפדפן, הוא לא ממזג.
+          אם יש בדפדפן נתונים חדשים שאינם בקובץ — גבו אותם קודם, ורק אחר כך שחזרו.
+        </div>
+        <p style="margin-bottom:0">אותו קובץ עובד גם במחשב אחר: פותחים שם את הכלי, לוחצים
+          ״שחזור מקובץ״ ובוחרים אותו. כך מעבירים לוח ממחשב למחשב.</p>
+      </div>
+
+      <div class="card">
+        <h3>עובדים ממחשב אחד? כדאי להוריד את הכלי למחשב</h3>
+        <p class="where">איפה: <b>הגדרות ← עותק לעבודה בלי אינטרנט ← הורדת עותק</b></p>
+        <p>הכלי כולו יורד כקובץ HTML אחד. פותחים אותו בדאבל־קליק והוא עובד גם בלי חיבור
+          לאינטרנט — בבית, במרפאה, בכל מקום.</p>
+        <p>יש שתי אפשרויות:</p>
+        <ul>
+          <li><b>עותק ריק</b> — הכלי בלבד, בלי שום נתון. זה מה ששולחים לקולגה שרוצה לנסות.</li>
+          <li><b>עותק עם הנתונים שלי</b> — נפתח כשהצוות שלכם כבר בפנים. מכיל שמות, טלפונים,
+            מיילים ותאריכי לידה של העובדים, ולכן הוא לשימוש אישי בלבד — <b>לא לשלוח אותו לאף אחד.</b></li>
+        </ul>
+        <div class="callout">
+          <b>מה בדיוק שורד ומה לא:</b> קובץ הכלי עצמו נשאר במחשב גם אחרי ניקוי היסטוריה —
+          אבל <b>הנתונים שבתוכו עדיין שמורים בדפדפן</b>, ולכן ניקוי היסטוריה עלול למחוק גם אותם.
+          הורדת הכלי היא נוחות, לא גיבוי. <b>מה שבאמת מגן עליכם הוא קובץ ה־JSON.</b>
+        </div>
+        <p style="margin-bottom:0">ועוד דבר שכדאי לדעת: העותק שהורדתם והאתר הם
+          <b>שני מסדי נתונים נפרדים</b>. מה שתערכו באחד לא יופיע בשני. הגשר ביניהם הוא
+          בדיוק אותו גיבוי ושחזור.</p>
+      </div>
+
+      <div class="card">
+        <h3>רוצים שזה יעבוד מכל המחשבים?</h3>
+        <p>הגרסה הזו, בכוונה, היא מחשב אחד. זה מה שמאפשר להבטיח ששום נתון לא יוצא מהדפדפן שלכם.</p>
+        <p>אם אתם צריכים שהלוח יהיה זמין גם מהמרפאה וגם מהבית, שכמה אנשים יראו ויערכו אותו,
+          או שהעובדים עצמם יגישו בקשות ויראו את המשמרות שלהם — <b>יש לזה פתרונות שרצים בענן,
+          ואפשר להקים אותם.</b></p>
+        <p style="margin-bottom:0">זה כבר לא משהו שמורידים — צריך להקים את זה לכל מרפאה בנפרד.
+          מוזמנים לפנות אליי: ד״ר גיל קרן,
+          <a href="mailto:vetrinarbatyam@gmail.com?subject=VetShifts%20-%20פתרון%20ענן">vetrinarbatyam@gmail.com</a>.</p>
+      </div>
+
+      <div class="card">
+        <h3>בקצרה, איך מתחילים</h3>
+        <ol class="steps">
+          <li><b>הגדרות</b> — שם המרפאה, ימי הפעילות, שעות המשמרות ושמות קבוצות התפקיד.</li>
+          <li><b>עובדים</b> — כרטיס לכל עובד: פרטים אישיים, ומה שחשוב באמת — רשת הזמינות.
+            לחיצה על תא מחליפה בין ״פנוי״, ״עדיף שלא״ ו״חסום״. <b>חסום</b> לא ייפרץ לעולם;
+            <b>עדיף שלא</b> ייפרץ רק אם אין אף חלופה.</li>
+          <li><b>דרישות ויעדים</b> — כמה אנשים מכל קבוצה צריך בכל משמרת, וכמה משמרות כל עובד
+            אמור לקבל בשבוע.</li>
+          <li><b>לוח שבועי</b> — ״יצירה אוטומטית״. אם משמרת לא הצליחה להתאייש, הכלי יגיד לכם
+            בדיוק איזו ולמה. אפשר לתקן ידנית, ואז ״תמונה לשליחה״ כדי לשלוח לצוות בוואטסאפ.</li>
+        </ol>
+        <p style="margin-bottom:0" class="where">אין ״שמירה״ — כל שינוי נשמר מיד.</p>
+      </div>
     </div>
   </section>
 
@@ -697,8 +823,18 @@ function load() {
   catch (e) { banner('bad', 'הנתונים השמורים לא נקראו והוחלפו בברירת מחדל. אם יש לכם קובץ גיבוי — שחזרו ממנו.'); return defaults(); }
 }
 
+/** שבוע ריק שנוצר רק מרינדור אינו נתון — מנקים לפני שמירה כדי שלא יצטבר בגיבוי. */
+function pruneEmptyWeeks() {
+  Object.keys(state.weeks).forEach(function (w) {
+    var k = state.weeks[w];
+    if (!k.locked && !(k.assignments || []).length &&
+        !Object.keys(k.dayNotes || {}).length && !k.demandOverride) delete state.weeks[w];
+  });
+}
+
 var saving = false;
 function save() {
+  pruneEmptyWeeks();
   saving = true;
   try { localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) {
@@ -727,11 +863,17 @@ function banner(kind, text, actionLabel, action) {
 function backupNag() {
   var last = state.meta.lastBackupAt;
   var stale = !last || (Date.parse(S.todayISO()) - Date.parse(last)) / 86400000 > 21;
-  var hasData = state.employees.length || Object.keys(state.weeks).length;
+  var hasData = state.employees.length || Object.keys(state.weeks).some(function (w) {
+    var k = state.weeks[w];
+    return (k.assignments || []).length || Object.keys(k.dayNotes || {}).length;
+  });
   if (!stale || !hasData) return;
-  banner('warn', last ? 'הגיבוי האחרון היה ב־' + fmtDate(last) + '. הנתונים יושבים בדפדפן הזה בלבד.'
-                      : 'עוד לא גיביתם. הנתונים יושבים בדפדפן הזה בלבד — ניקוי היסטוריית גלישה ימחק אותם.',
-         'גיבוי לקובץ', doExport);
+  var n = banner('warn', last ? 'הגיבוי האחרון היה ב־' + fmtDate(last) + '. הנתונים יושבים בדפדפן הזה בלבד.'
+                             : 'עוד לא גיביתם. הנתונים יושבים בדפדפן הזה בלבד — ניקוי היסטוריית גלישה ימחק אותם.',
+                'גיבוי לקובץ', doExport);
+  var more = el('button', { className: 'linky', textContent: 'למה זה חשוב' });
+  more.onclick = function () { showTab('guide'); };
+  n.insertBefore(more, n.lastChild);
 }
 
 /* ══ עזרים ═══════════════════════════════════════════════════════════════ */
@@ -804,7 +946,7 @@ function availGrid(table, opts) {
 }
 
 /* ══ טאבים ═══════════════════════════════════════════════════════════════ */
-var TABS = ['board', 'employees', 'demand', 'settings'];
+var TABS = ['board', 'employees', 'demand', 'settings', 'guide'];
 function showTab(name) {
   TABS.forEach(function (t) { $('tab-' + t).hidden = (t !== name); });
   Array.from($('nav').children).forEach(function (b) {
@@ -814,7 +956,8 @@ function showTab(name) {
   ({ board: renderBoard,
      employees: function () { renderEmployees(); renderAbsences(); },
      demand: renderDemand,
-     settings: function () { renderSettings(); renderSpecialists(); } })[name]();
+     settings: function () { renderSettings(); renderSpecialists(); },
+     guide: function () {} })[name]();
 }
 $('nav').addEventListener('click', function (e) {
   var b = e.target.closest('button[data-tab]');
@@ -2205,7 +2348,12 @@ function boot() {
   state = load();
   renderAll();
   backupNag();
-  showTab(state.employees.length ? 'board' : 'settings');
+  if (state.employees.length) { showTab('board'); }
+  else {
+    showTab('guide');
+    banner('info', 'זו הפעם הראשונה כאן. שווה לקרוא את המדריך — במיוחד את החלק על גיבוי.',
+           'התחלה בהגדרות', function () { showTab('settings'); });
+  }
 }
 
 /* ══ שער גישה ════════════════════════════════════════════════════════════

@@ -4,6 +4,7 @@ export async function seed(p) {
   if (await p.locator('#gate').isVisible()) {
     await p.fill('#gateCode', 'claudevet2026'); await p.click('#gateForm button'); await p.waitForTimeout(300);
   }
+  await p.click('nav button[data-tab="settings"]');
   await p.fill('#setClinic', 'מרפאה וטרינרית הרצליה');
   await p.click('#addSpec'); await p.waitForTimeout(80);
   await p.locator('#specBody tr').first().locator('input').fill('כירורגיה');
