@@ -57,7 +57,9 @@ server {
     # index ו-config תמיד טריים, אחרת עדכון גרסה לא מגיע ומוני הכניסות משקרים
     location = /index.html { add_header Cache-Control "no-cache, no-store, must-revalidate"; }
     location = /config.json { add_header Cache-Control "no-cache, no-store, must-revalidate"; }
-    location = /solver.js  { add_header Cache-Control "no-cache"; }
+    # no-store ולא no-cache: index.html ו-solver.js חייבים להתעדכן יחד.
+    # solver ישן מהקאש מול index חדש מפיל את ציור הלוח באמצע.
+    location = /solver.js  { add_header Cache-Control "no-store"; }
 }
 NGX
 ln -sf /etc/nginx/sites-available/shifts.claudevet.com /etc/nginx/sites-enabled/shifts.claudevet.com

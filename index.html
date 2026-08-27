@@ -129,6 +129,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
   border-radius:var(--r);padding:.3rem .55rem;font-weight:700;font-size:.85rem;
   display:flex;gap:.4rem;align-items:baseline}
 .board .bhead .dt{color:#3E837A;font-weight:500;font-size:.78rem}
+.board .bhead.today{background:var(--teal);color:#fff;border-color:var(--teal)}
+.board .bhead.today .dt{color:#CFEDE8}
+.nowtag{font-size:.68rem;background:rgba(255,255,255,.22);border-radius:3px;padding:0 .3rem}
 .board .bhead .grow{flex:1}
 .board .bcell{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
   padding:.35rem;display:flex;flex-direction:column;gap:.25rem;min-height:4.2rem}
@@ -176,6 +179,16 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 .sumchip[data-st="ok"]{background:var(--warn-bg);border-color:#E6D3A0;color:#6E4B07}
 .sumchip[data-st="full"]{background:var(--ok-bg);border-color:#BFE0CA;color:var(--ok)}
 .sumchip[data-st="extra"]{border-style:dashed}
+.jump{display:flex;gap:.7rem;align-items:baseline;flex-wrap:wrap;width:100%;text-align:start;
+  background:var(--card);border:1px solid var(--teal-line,#BFE0DA);border-radius:var(--r);
+  padding:.7rem .9rem;margin-bottom:1.2rem;cursor:pointer;font:inherit;color:var(--ink)}
+.jump:hover{background:var(--teal-soft);border-color:var(--teal)}
+.jump .grow{flex:1;min-width:14ch;font-size:.92rem}
+.jump .go{color:var(--teal);font-weight:700;font-size:.88rem;white-space:nowrap}
+.flash{animation:flash 1.4s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--teal-soft);border-color:var(--teal)}
+  100%{box-shadow:0 0 0 3px transparent}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none;border-color:var(--teal)}}
 .scopebar{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap;margin-bottom:.7rem}
 .switch{display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--muted);
   cursor:pointer;white-space:nowrap}
@@ -334,6 +347,7 @@ footer a{color:var(--teal)}
       <button class="btn ghost sm" id="wkPrev" title="שבוע קודם">→</button>
       <input type="date" id="wkDate" style="width:auto">
       <button class="btn ghost sm" id="wkNext" title="שבוע הבא">←</button>
+      <button class="btn ghost sm" id="wkToday" title="חזרה לשבוע הנוכחי">היום</button>
       <span class="wklabel" id="wkLabel"></span>
       <span class="grow"></span>
       <label class="switch" title="נסה לא לשבץ את אותו עובד לשתי משמרות באותו יום">
@@ -538,6 +552,12 @@ footer a{color:var(--teal)}
     <h2>הגדרות המרפאה</h2>
     <p class="sub">הגדירו כאן את המציאות של המרפאה שלכם — שעות, ימים ותפקידים. כל שאר המסכים נגזרים מזה.</p>
 
+    <button type="button" class="jump" id="jumpDemo">
+      <span class="grow"><b>רוצים לנסות לפני שמזינים?</b> אפשר לטעון מרפאת דמו מלאה, ולמחוק הכל
+        כשמתחילים באמת.</span>
+      <span class="go">לדמו ולאיפוס ←</span>
+    </button>
+
     <div class="card">
       <h3>שם ופרטים</h3>
       <p class="sub">השם מופיע בכותרת ובתמונת הלוח שנשלחת לצוות.</p>
@@ -615,7 +635,7 @@ footer a{color:var(--teal)}
       <button class="btn ghost" id="offBtn">הורדת עותק</button>
     </div>
 
-    <div class="card">
+    <div class="card" id="demoCard">
       <h3>התנסות ואיפוס</h3>
       <p class="sub">רוצים להבין מה הכלי עושה לפני שמזינים את הצוות האמיתי?
         טענו מרפאת דמו מלאה — שמונה עובדים, שלוש משמרות, מחלה וחופשה, עובד בחפיפה,
@@ -802,6 +822,23 @@ footer a{color:var(--teal)}
 (function () {
 'use strict';
 var S = globalThis.VetSolver;
+
+// index.html ו-solver.js מתעדכנים יחד. אם הדפדפן החזיק solver ישן בקאש,
+// קריאה לפונקציה שנוספה מאוחר יותר קורסת באמצע הציור ומשאירה לוח חלקי —
+// שנראה בדיוק כמו אובדן נתונים. עדיף להגיד את זה במפורש.
+var NEEDS = ['generate', 'manualAddConflicts', 'hasHard', 'reasonText',
+             'weekStartOf', 'addDaysISO', 'todayISO', 'fmtConstraintDays'];
+var MISSING = S ? NEEDS.filter(function (k) { return typeof S[k] !== 'function'; }) : NEEDS;
+if (MISSING.length) {
+  document.body.innerHTML =
+    '<div style="max-width:34rem;margin:18vh auto;padding:1.2rem;font:16px/1.6 Heebo,sans-serif;' +
+    'direction:rtl;background:#F8DCDC;border:1px solid #D99C9C;border-radius:6px;color:#A63434">' +
+    '<b style="font-size:1.1rem">הדפדפן טען גרסה ישנה של הכלי</b>' +
+    '<p style="margin:.6rem 0">רעננו את הדף עם <b>Ctrl+F5</b> (או Cmd+Shift+R במק). ' +
+    'הנתונים שלכם לא נפגעו — הם שמורים כרגיל.</p>' +
+    '<p style="margin:0;font-size:.85rem;opacity:.85">חסר: ' + MISSING.join(', ') + '</p></div>';
+  return;
+}
 var $ = function (id) { return document.getElementById(id); };
 var el = function (tag, props, kids) {
   var n = document.createElement(tag);
@@ -1019,6 +1056,17 @@ function empById(id) { return state.employees.find(function (e) { return e.id ==
 function isBirthday(e, iso) { return !!e.birthDate && e.birthDate.slice(5) === iso.slice(5); }
 
 function renderBoard() {
+  try { renderBoardInner(); }
+  catch (err) {
+    // לוח חצי-מצויר נראה כמו נתונים שנעלמו. עדיף מסך ריק עם הסבר.
+    $('board').textContent = '';
+    $('board').style.gridTemplateColumns = '1fr';
+    banner('bad', 'שגיאה בהצגת הלוח: ' + (err && err.message || err) +
+      '. הנתונים שמורים — נסו לרענן את הדף.');
+  }
+}
+
+function renderBoardInner() {
   var st = state.settings, wk = weekOf(curWeek);
   var days = st.activeDays.slice().sort(function (a, b) { return a - b; });
   var parts = st.parts;
@@ -1041,9 +1089,10 @@ function renderBoard() {
 
   days.forEach(function (d) {
     var iso = S.addDaysISO(curWeek, d);
-    var head = el('div', { className: 'bhead' });
+    var head = el('div', { className: 'bhead' + (iso === S.todayISO() ? ' today' : '') });
     head.append(el('span', { textContent: DAY[d] }),
                 el('span', { className: 'dt num', textContent: (+iso.slice(8, 10)) + '.' + (+iso.slice(5, 7)) }));
+    if (iso === S.todayISO()) head.append(el('span', { className: 'nowtag', textContent: 'היום' }));
     var bdays = state.employees.filter(function (e) { return e.active !== false && isBirthday(e, iso); });
     if (bdays.length) {
       head.append(el('span', { className: 'grow' }),
@@ -1143,7 +1192,9 @@ function weekLabel(ws) {
   var n = Math.round((S.parseISO(ws) - S.parseISO(S.weekStartOf(S.todayISO()))) / (7 * 86400000));
   var rel = n === 0 ? 'השבוע' : n === 1 ? 'שבוע הבא' : n === -1 ? 'שבוע שעבר'
           : n > 0 ? 'בעוד ' + n + ' שבועות' : 'לפני ' + (-n) + ' שבועות';
-  return dm(ws) + '–' + dm(S.addDaysISO(ws, 6)) + ' · ' + rel;
+  var days = (state.settings.activeDays || [0, 1, 2, 3, 4, 5]);
+  var last = days.length ? Math.max.apply(null, days) : 6;
+  return dm(ws) + '–' + dm(S.addDaysISO(ws, last)) + ' · ' + rel;
 }
 
 function renderWeekBanner() {
@@ -1174,6 +1225,7 @@ function gotoWeek(ws) { curWeek = ws; $('genReport').textContent = ''; renderBoa
 $('wkPrev').onclick = function () { gotoWeek(S.addDaysISO(curWeek, -7)); };
 $('wkNext').onclick = function () { gotoWeek(S.addDaysISO(curWeek, 7)); };
 $('wkDate').onchange = function () { if (this.value) gotoWeek(S.weekStartOf(this.value)); };
+$('wkToday').onclick = function () { gotoWeek(S.weekStartOf(S.todayISO())); };
 
 $('wkLock').onclick = function () {
   var wk = weekOf(curWeek);
@@ -2546,6 +2598,14 @@ function loadDemo() {
     .then(function (yes) { if (yes) go(); });
 }
 $('loadDemo').onclick = loadDemo;
+$('jumpDemo').onclick = function () {
+  var c = $('demoCard');
+  c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  c.classList.remove('flash');
+  void c.offsetWidth;               // מאלץ הפעלה מחדש של האנימציה
+  c.classList.add('flash');
+  setTimeout(function () { c.classList.remove('flash'); }, 1600);
+};
 
 /* ══ דף קשר ══════════════════════════════════════════════════════════════ */
 function contactsHTML() {
