@@ -38,8 +38,9 @@ git -C "$ROOT" log --oneline -1
 # אינן מספיקות: index.html חדש נטען עם solver.js ישן והציור נשבר באמצע.
 # URL עם ה-SHA הוא URL אחר גם ל-CF וגם לדפדפן.
 SHA=$(git -C "$ROOT" rev-parse --short HEAD)
-sed -i "s|solver\\.js?v=[A-Za-z0-9]*|solver.js?v=$SHA|g" "$ROOT/index.html"
-grep -o 'solver\\.js?v=[A-Za-z0-9]*' "$ROOT/index.html" | head -1
+sed -i "s|solver\.js?v=[A-Za-z0-9]*|solver.js?v=$SHA|g" "$ROOT/index.html"
+# בלי head: סגירת הצינור מפילה את grep, ועם pipefail זה מפיל את כל הפריסה
+grep -o -m1 'solver\.js?v=[A-Za-z0-9]*' "$ROOT/index.html" || echo 'WARNING: version stamp missing'
 
 say "3. log format"
 cat > /etc/nginx/conf.d/vetshifts-log.conf <<'NGX'
