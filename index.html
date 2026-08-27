@@ -23,7 +23,7 @@ body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);
      -webkit-text-size-adjust:100%;min-height:100vh;display:flex;flex-direction:column}
 main{flex:1}
 h1,h2,h3{font-family:var(--serif);font-weight:700;text-wrap:balance;margin:0}
-h1{font-size:1.25rem} h2{font-size:1.1rem} h3{font-size:1rem}
+h1{font-size:1.55rem;line-height:1.25} h2{font-size:1.24rem} h3{font-size:1rem}
 button,input,select,textarea{font:inherit;color:inherit}
 .num{font-variant-numeric:tabular-nums}
 
@@ -89,7 +89,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 .chip[aria-pressed="true"]{background:var(--teal-soft);border-color:#BFE0DA;color:var(--teal);font-weight:700}
 .tag{display:inline-block;border:1px solid var(--rule);border-radius:var(--r);
   padding:.05rem .45rem;font-size:.78rem;color:var(--muted);white-space:nowrap}
-.tag.grp{border-inline-start-width:3px}
+.tag.grp::before{content:"";display:inline-block;width:.5rem;height:.5rem;border-radius:50%;
+  background:var(--dot,var(--muted));margin-inline-end:.4rem;vertical-align:-.05rem}
 
 /* ── רשת זמינות ────────────────────────────────────────────────────────── */
 .avail{border-collapse:collapse;font-size:.85rem;min-width:100%}
@@ -538,7 +539,7 @@ function renderEmployees() {
 
     tr.append(el('td', { 'data-label': 'קבוצה' }, [el('span', {
       className: 'tag grp', textContent: g.name,
-      style: 'border-inline-start-color:' + groupColor(g.key)
+      style: '--dot:' + groupColor(g.key)
     })]));
     tr.append(el('td', { className: 'num', 'data-label': 'טלפון', textContent: e.phone || '—' }));
     tr.append(el('td', { 'data-label': 'מייל', textContent: e.email || '—' }));
@@ -800,7 +801,7 @@ function renderSettings() {
     inp.onblur = function () { renderEmployees(); };
     tr.append(el('td', {}, [inp]));
     tr.append(el('td', {}, [el('span', {
-      className: 'tag grp', style: 'border-inline-start-color:' + groupColor(g.key),
+      className: 'tag grp', style: '--dot:' + groupColor(g.key),
       textContent: g.isTrainee ? 'תמיד בנוסף' : 'ממלא דרישות'
     })]));
     tr.append(el('td', { className: 'num', textContent: String(used) }));
