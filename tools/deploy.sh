@@ -34,6 +34,12 @@ else
   rm -rf "$ROOT"; git clone --quiet "$REPO_URL" "$ROOT"
 fi
 git -C "$ROOT" log --oneline -1
+# Cloudflare דורס Cache-Control של .js ומגיש max-age=14400, ולכן כותרות מהמקור
+# אינן מספיקות: index.html חדש נטען עם solver.js ישן והציור נשבר באמצע.
+# URL עם ה-SHA הוא URL אחר גם ל-CF וגם לדפדפן.
+SHA=$(git -C "$ROOT" rev-parse --short HEAD)
+sed -i "s|solver\\.js?v=[A-Za-z0-9]*|solver.js?v=$SHA|g" "$ROOT/index.html"
+grep -o 'solver\\.js?v=[A-Za-z0-9]*' "$ROOT/index.html" | head -1
 
 say "3. log format"
 cat > /etc/nginx/conf.d/vetshifts-log.conf <<'NGX'
