@@ -221,6 +221,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-of
 .callout{background:var(--warn-bg);border:1px solid #E6D3A0;border-radius:var(--r);
   padding:.7rem .9rem;color:#6E4B07;font-size:.92rem;margin-bottom:.8rem}
 .callout b{color:#5A3D05}
+.callout.red{background:var(--bad-bg);border-color:#E3C2C2;border-inline-start:4px solid var(--bad);
+  color:var(--bad)}
+.callout.red b{color:var(--bad)}
 .guide .where{color:var(--muted);font-size:.87rem}
 .guide .where b{color:var(--teal)}
 
@@ -424,8 +427,11 @@ footer a{color:var(--teal)}
           <b>שימו לב:</b> השחזור <b>מחליף</b> את מה שיש עכשיו בדפדפן, הוא לא ממזג.
           אם יש בדפדפן נתונים חדשים שאינם בקובץ — גבו אותם קודם, ורק אחר כך שחזרו.
         </div>
-        <p style="margin-bottom:0">אותו קובץ עובד גם במחשב אחר: פותחים שם את הכלי, לוחצים
-          ״שחזור מקובץ״ ובוחרים אותו. כך מעבירים לוח ממחשב למחשב.</p>
+        <div class="callout red" style="margin-bottom:0">
+          <b>אותו קובץ עובד גם במחשב אחר.</b> פותחים שם את הכלי, לוחצים ״שחזור מקובץ״
+          ובוחרים אותו — <b>וכך מעבירים לוח ממחשב למחשב.</b>
+          זו גם הדרך להעביר את הלוח בין המחשב במרפאה למחשב בבית, ובין העותק שהורדתם לאתר.
+        </div>
       </div>
 
       <div class="card">
